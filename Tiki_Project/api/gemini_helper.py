@@ -17,7 +17,7 @@ class GeminiManager:
         self.current_key_idx = 0
         
         # Available models list for fallback (ordered by priority/cost/speed)
-        self.models = ["gemini-flash-latest", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"]
+        self.models = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"]
         self.current_model_idx = 0
         
         if not self.api_keys:
@@ -59,26 +59,35 @@ class GeminiManager:
 
     def rotate_key_or_model(self) -> bool:
         """
-        Rotates the API key. If a full cycle of keys has been exhausted,
-        it rotates the model to the next one and resets key index to 0.
+        Rotates the model. If all models have been exhausted for the current API key,
+        it rotates the API key to the next one and resets the model index.
         Returns True if a rotation took place, False otherwise.
         """
-        if not self.api_keys:
-            return self.rotate_model()
+        if len(self.models) > 1:
+            self.current_model_idx = (self.current_model_idx + 1) % len(self.models)
+            logger.info(f"🔄 Switched active model to: {self.get_current_model_name()}")
             
-        if len(self.api_keys) > 1:
-            self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
-            self.configure_current_key()
-            
-            # If we wrapped around to index 0, it means all keys were tried. Let's rotate the model!
-            if self.current_key_idx == 0:
-                logger.info("🔄 All Gemini API keys exhausted for current model. Rotating model...")
-                self.rotate_model()
+            # If model index wrapped around to 0, it means all models were tried on the current key.
+            # So now we rotate the API key.
+            if self.current_model_idx == 0:
+                logger.info("🔄 All models exhausted for current Gemini API key. Rotating API key...")
+                if len(self.api_keys) > 1:
+                    self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
+                    self.configure_current_key()
+                    logger.info(f"🔑 Switched to API key index {self.current_key_idx}.")
+                else:
+                    logger.warning("⚠️ Only one Gemini API key is configured. Cannot rotate key.")
             return True
         else:
-            # If we only have 1 API key, try rotating the model
-            logger.info("🔄 Single Gemini API key configured. Rotating model...")
-            return self.rotate_model()
+            # If we only have 1 model, try rotating the API key
+            logger.info("🔄 Single Gemini model configured. Rotating API key...")
+            if len(self.api_keys) > 1:
+                self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
+                self.configure_current_key()
+                return True
+            else:
+                logger.warning("⚠️ Only one API key and one model configured. Cannot rotate.")
+                return False
         
     def get_model(self, model_name: str = "gemini-flash-latest", tools = None) -> genai.GenerativeModel:
         """Instantiates and returns a new GenerativeModel with the active API key and model"""
@@ -107,20 +116,13 @@ class GeminiManager:
             except Exception as e:
                 err_str = str(e)
                 err_type = type(e).__name__
-                is_rate_limit = (
-                    "429" in err_str or 
-                    "quota" in err_str.lower() or 
-                    "ResourceExhausted" in err_type or 
-                    "ResourceExhausted" in err_str
-                )
                 
                 logger.warning(f"⚠️ Gemini API error (attempt {attempt + 1}/{max_attempts}): [{err_type}] {e}")
                 
-                if is_rate_limit:
-                    logger.info("🔄 Quota exceeded or rate limited. Attempting API key or model rotation...")
-                    if self.rotate_key_or_model():
-                        logger.info("✅ Rotation successful. Retrying immediately...")
-                        continue
+                logger.info("🔄 API error encountered. Attempting API key or model rotation...")
+                if self.rotate_key_or_model():
+                    logger.info("✅ Rotation successful. Retrying immediately...")
+                    continue
                         
                 if attempt == max_attempts - 1:
                     logger.error("❌ Gemini API failed after maximum retries.")

@@ -588,6 +588,23 @@ async def chat_assistant(request: ChatRequest):
         logger.error(f"AI Chat failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/chat/{session_id}")
+async def delete_chat_session(session_id: str):
+    if assistant is None:
+        raise HTTPException(
+            status_code=503,
+            detail="AI Business Assistant is not initialized."
+        )
+    try:
+        if session_id in assistant.sessions:
+            del assistant.sessions[session_id]
+            logger.info(f"🗑️ Deleted chat session: {session_id}")
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Failed to delete chat session {session_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/stats")
 async def get_stats():
     """Get API statistics"""

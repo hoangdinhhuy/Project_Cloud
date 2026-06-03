@@ -762,7 +762,7 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
                 
                 logger.warning(f"⚠️ Chat API send_message failed (attempt {attempt + 1}/{max_attempts}): [{err_type}] {e}")
                 
-                if is_rate_limit:
+                if True:
                     logger.info("🔄 Chat message rate limited or quota exceeded. Rotating API key or model...")
                     if gemini_manager.rotate_key_or_model():
                         # Key or Model rotated. Recreate the model using current active model in rotation

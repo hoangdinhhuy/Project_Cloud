@@ -118,27 +118,107 @@ function MarketReportPage() {
     const [selectedContextId, setSelectedContextId] = useState(null);
     const [searchHistory, setSearchHistory] = useState([]);
     
-    // Persistent Session ID
-    const [sessionId] = useState(() => {
-        const key = 'tiki_ai_assistant_session_id';
-        let sid = localStorage.getItem(key);
-        if (!sid) {
-            sid = 'sess_' + Math.random().toString(36).substring(2, 15);
-            localStorage.setItem(key, sid);
+    // Persistent Session ID & List
+    const [sessions, setSessions] = useState(() => {
+        const key = 'tiki_chat_sessions_list';
+        let list = localStorage.getItem(key);
+        if (!list) {
+            list = JSON.stringify([{ id: 'sess_default', name: 'Tư vấn chung' }]);
+            localStorage.setItem(key, list);
         }
-        return sid;
+        return JSON.parse(list);
     });
+
+    const [activeSessionId, setActiveSessionId] = useState(() => {
+        const key = 'tiki_chat_active_session_id';
+        let activeId = localStorage.getItem(key);
+        if (!activeId) {
+            activeId = 'sess_default';
+            localStorage.setItem(key, activeId);
+        }
+        return activeId;
+    });
+
+    const [isSessionListOpen, setIsSessionListOpen] = useState(false);
+    const [chatMessages, setChatMessages] = useState([]);
+
+    useEffect(() => {
+        const key = `tiki_chat_messages_${activeSessionId}`;
+        let msgs = localStorage.getItem(key);
+        if (!msgs) {
+            const defaultWelcome = [
+                {
+                    role: 'assistant',
+                    text: '👋 Xin chào! Tôi là Trợ lý AI Tư vấn Kinh doanh trên sàn Tiki.\n\nTôi có thể đề xuất các mô hình kinh doanh phù hợp với vốn, phân tích doanh thu/lợi nhuận thực tế, đánh giá rủi ro và lập kế hoạch triển khai từng bước.\n\n👉 Để bắt đầu, bạn dự kiến đầu tư số vốn khoảng bao nhiêu không?'
+                }
+            ];
+            localStorage.setItem(key, JSON.stringify(defaultWelcome));
+            setChatMessages(defaultWelcome);
+        } else {
+            setChatMessages(JSON.parse(msgs));
+        }
+    }, [activeSessionId]);
+
+    const saveMessages = (msgs) => {
+        setChatMessages(msgs);
+        localStorage.setItem(`tiki_chat_messages_${activeSessionId}`, JSON.stringify(msgs));
+    };
+
+    const handleCreateSession = (name = null) => {
+        const newId = 'sess_' + Math.random().toString(36).substring(2, 15);
+        const sessName = name || `Hội thoại mới ${sessions.length + 1}`;
+        const newSessions = [...sessions, { id: newId, name: sessName }];
+        setSessions(newSessions);
+        localStorage.setItem('tiki_chat_sessions_list', JSON.stringify(newSessions));
+        
+        setActiveSessionId(newId);
+        localStorage.setItem('tiki_chat_active_session_id', newId);
+        
+        const welcomeMsg = [
+            {
+                role: 'assistant',
+                text: `👋 Chào mừng bạn đến với cuộc hội thoại mới về: **${sessName}**.\n\nBạn dự kiến đầu tư số vốn khoảng bao nhiêu cho mô hình này?`
+            }
+        ];
+        localStorage.setItem(`tiki_chat_messages_${newId}`, JSON.stringify(welcomeMsg));
+        setChatMessages(welcomeMsg);
+        setIsSessionListOpen(false);
+    };
+
+    const handleDeleteSession = async (idToDelete, e) => {
+        if (e) e.stopPropagation();
+        
+        if (sessions.length <= 1) {
+            alert("Không thể xóa cuộc hội thoại duy nhất còn lại!");
+            return;
+        }
+        
+        const confirmDelete = confirm(`Bạn có chắc chắn muốn xóa cuộc hội thoại này không?`);
+        if (!confirmDelete) return;
+
+        const newSessions = sessions.filter(s => s.id !== idToDelete);
+        setSessions(newSessions);
+        localStorage.setItem('tiki_chat_sessions_list', JSON.stringify(newSessions));
+        
+        localStorage.removeItem(`tiki_chat_messages_${idToDelete}`);
+        
+        try {
+            await fetch(`${API_BASE_URL}/api/chat/${idToDelete}`, { method: 'DELETE' });
+        } catch (err) {
+            console.error("Backend session delete error:", err);
+        }
+        
+        if (activeSessionId === idToDelete) {
+            const nextId = newSessions[0].id;
+            setActiveSessionId(nextId);
+            localStorage.setItem('tiki_chat_active_session_id', nextId);
+        }
+    };
 
     // Profile & Context state
     const [userProfile, setUserProfile] = useState({ capital: null, location: 'TP.HCM', interest: null, experience: null });
     const [activeBusiness, setActiveBusiness] = useState(null);
 
-    const [chatMessages, setChatMessages] = useState([
-        {
-            role: 'assistant',
-            text: '👋 Xin chào! Tôi là Trợ lý AI Tư vấn Kinh doanh trên sàn Tiki.\n\nTôi có thể đề xuất các mô hình kinh doanh phù hợp với vốn, phân tích doanh thu/lợi nhuận thực tế, đánh giá rủi ro và lập kế hoạch triển khai từng bước.\n\n👉 Để bắt đầu, bạn dự kiến đầu tư số vốn khoảng bao nhiêu không?'
-        }
-    ]);
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -499,7 +579,8 @@ function MarketReportPage() {
         const question = (questionText || '').trim();
         if (!question || chatLoading) return;
 
-        setChatMessages((prev) => [...prev, { role: 'user', text: question }]);
+        const newUserMessages = [...chatMessages, { role: 'user', text: question }];
+        saveMessages(newUserMessages);
         setChatInput('');
         setChatLoading(true);
 
@@ -511,7 +592,7 @@ function MarketReportPage() {
                 },
                 body: JSON.stringify({
                     message: question,
-                    session_id: sessionId
+                    session_id: activeSessionId
                 })
             });
             
@@ -521,7 +602,8 @@ function MarketReportPage() {
             
             const data = await res.json();
             if (data.success) {
-                setChatMessages((prev) => [...prev, { role: 'assistant', text: data.response }]);
+                const newAssistantMessages = [...newUserMessages, { role: 'assistant', text: data.response }];
+                saveMessages(newAssistantMessages);
                 if (data.profile) {
                     setUserProfile(data.profile);
                 }
@@ -529,10 +611,10 @@ function MarketReportPage() {
                     setActiveBusiness(data.active_business);
                 }
             } else {
-                setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi: ${data.response || 'Không thể xử lý yêu cầu'}` }]);
+                saveMessages([...newUserMessages, { role: 'assistant', text: `❌ Lỗi: ${data.response || 'Không thể xử lý yêu cầu'}` }]);
             }
         } catch (error) {
-            setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi kết nối: ${error.message}` }]);
+            saveMessages([...newUserMessages, { role: 'assistant', text: `❌ Lỗi kết nối: ${error.message}` }]);
         } finally {
             setChatLoading(false);
             setTimeout(() => lucide.createIcons(), 100);
@@ -1034,126 +1116,217 @@ function MarketReportPage() {
                 </div>
 
                 {isChatOpen && (
-                    <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[410px] z-40">
-                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl flex flex-col max-h-[500px]">
-                            {/* Header */}
-                            <div className="p-3 border-b border-blue-100 bg-blue-600 text-white flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <Icon name="sparkles" size={18} className="text-white fill-current animate-pulse" />
-                                    <h3 className="font-bold text-sm">AI Business Assistant</h3>
-                                </div>
-                                <button
-                                    onClick={() => setIsChatOpen(false)}
-                                    className="text-white hover:text-blue-100"
-                                >
-                                    <Icon name="x" size={16} />
-                                </button>
-                            </div>
-
-                            {/* User Profile Bar (if capital is set) */}
-                            {userProfile.capital && (
-                                <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100 text-[10px] text-blue-800 flex justify-between items-center font-medium">
-                                    <span>💰 Vốn: {Number(userProfile.capital).toLocaleString('vi-VN')}đ</span>
-                                    <span>📍 Khu vực: {userProfile.location}</span>
-                                    {activeBusiness && <span className="truncate max-w-[120px]" title={activeBusiness}>🎯 Đang chọn: {activeBusiness}</span>}
+                    <div className={`fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 z-40 transition-all duration-300 ${isSessionListOpen ? 'sm:w-[610px]' : 'sm:w-[410px]'}`}>
+                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl flex flex-row h-[500px]">
+                            {/* Session List Panel on the Left */}
+                            {isSessionListOpen && (
+                                <div className="w-[200px] bg-blue-50 border-r border-blue-100 p-3 flex flex-col h-full text-[11px] text-gray-800 flex-shrink-0">
+                                    <div className="flex justify-between items-center mb-2 flex-shrink-0">
+                                        <span className="font-bold text-blue-900">Các cuộc hội thoại</span>
+                                        <button 
+                                            onClick={() => {
+                                                const name = prompt("Nhập tên cuộc hội thoại mới:", `Hội thoại ${sessions.length + 1}`);
+                                                if (name && name.trim()) {
+                                                    handleCreateSession(name.trim());
+                                                } else if (name !== null) {
+                                                    handleCreateSession();
+                                                }
+                                            }}
+                                            className="px-2 py-1 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                        >
+                                            <Icon name="plus" size={10} /> Mới
+                                        </button>
+                                    </div>
+                                    <div className="space-y-1 overflow-y-auto flex-1 pr-1">
+                                        {sessions.map((s) => (
+                                            <div 
+                                                key={s.id}
+                                                onClick={() => {
+                                                    setActiveSessionId(s.id);
+                                                    localStorage.setItem('tiki_chat_active_session_id', s.id);
+                                                }}
+                                                className={`p-2 rounded flex justify-between items-center cursor-pointer transition-colors ${
+                                                    s.id === activeSessionId 
+                                                        ? 'bg-blue-600 text-white font-semibold' 
+                                                        : 'bg-white hover:bg-blue-100 text-gray-700 border border-gray-150'
+                                                }`}
+                                            >
+                                                <span className="truncate max-w-[120px]" title={s.name}>{s.name}</span>
+                                                {sessions.length > 1 && (
+                                                    <button 
+                                                        onClick={(e) => handleDeleteSession(s.id, e)}
+                                                        className={`p-1 rounded transition-colors ${
+                                                            s.id === activeSessionId 
+                                                                ? 'text-blue-200 hover:text-white hover:bg-blue-700' 
+                                                                : 'text-gray-400 hover:text-red-500 hover:bg-gray-100'
+                                                        }`}
+                                                        title="Xóa hội thoại"
+                                                    >
+                                                        <Icon name="trash-2" size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Shortcut Commands */}
-                            <div className="p-2.5 border-b border-blue-100 bg-gray-50/50">
-                                <p className="text-[10px] text-gray-500 mb-1">Gợi ý phân tích nhanh cho "{marketKeyword || 'từ khóa'}":</p>
-                                <div className="grid grid-cols-4 gap-1">
-                                    {quickCommands.slice(0, 4).map((cmd) => (
-                                        <button
-                                            key={cmd.id}
-                                            onClick={() => handleQuickCommand(cmd.prompt)}
-                                            disabled={chatLoading}
-                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
-                                            title={cmd.label}
+                            {/* Main Chat Box on the Right */}
+                            <div className="flex-1 flex flex-col h-full min-w-0">
+                                {/* Header */}
+                                <div className="p-3 border-b border-blue-100 bg-blue-600 text-white flex items-center justify-between gap-2 flex-shrink-0">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <button 
+                                            onClick={() => setIsSessionListOpen(!isSessionListOpen)}
+                                            className="p-1 hover:bg-blue-700 rounded text-white flex items-center justify-center transition-colors"
+                                            title="Danh sách cuộc hội thoại"
+                                            type="button"
                                         >
-                                            {cmd.label}
+                                            <Icon name="menu" size={16} />
                                         </button>
-                                    ))}
-                                    {quickCommands.slice(4, 8).map((cmd) => (
-                                        <button
-                                            key={cmd.id}
-                                            onClick={() => handleQuickCommand(cmd.prompt)}
-                                            disabled={chatLoading}
-                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
-                                            title={cmd.label}
-                                        >
-                                            {cmd.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Messages area */}
-                            <div ref={chatContainerRef} className="h-64 overflow-y-auto p-3 space-y-3 bg-gray-50 flex-1">
-                                {chatMessages.map((m, idx) => (
-                                    <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div 
-                                            className={`max-w-[90%] px-3 py-2 rounded-lg text-xs leading-relaxed shadow-sm ${
-                                                m.role === 'user' 
-                                                    ? 'bg-blue-600 text-white rounded-br-none' 
-                                                    : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
-                                            }`}
-                                            dangerouslySetInnerHTML={{ __html: parseMarkdown(m.text) }}
-                                        />
+                                        <Icon name="sparkles" size={16} className="text-white fill-current animate-pulse flex-shrink-0" />
+                                        <h3 className="font-bold text-xs truncate" title={sessions.find(s => s.id === activeSessionId)?.name || 'AI Assistant'}>
+                                            {sessions.find(s => s.id === activeSessionId)?.name || 'AI Assistant'}
+                                        </h3>
                                     </div>
-                                ))}
-                                {chatLoading && (
-                                    <div className="text-[10px] text-gray-500 flex items-center gap-1">
-                                        <Icon name="loader-2" size={10} className="animate-spin text-blue-500" />
-                                        Trợ lý AI đang phân tích dữ liệu...
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                        <button
+                                            onClick={() => {
+                                                const name = prompt("Nhập tên cuộc hội thoại mới:", `Hội thoại ${sessions.length + 1}`);
+                                                if (name && name.trim()) {
+                                                    handleCreateSession(name.trim());
+                                                } else if (name !== null) {
+                                                    handleCreateSession();
+                                                }
+                                            }}
+                                            className="p-1 hover:bg-blue-700 rounded text-white flex items-center justify-center transition-colors"
+                                            title="Tạo hội thoại mới"
+                                            type="button"
+                                        >
+                                            <Icon name="plus" size={16} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDeleteSession(activeSessionId, e)}
+                                            className="p-1 hover:bg-blue-700 rounded text-white flex items-center justify-center transition-colors"
+                                            title="Xóa hội thoại hiện tại"
+                                            type="button"
+                                        >
+                                            <Icon name="trash-2" size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsChatOpen(false)}
+                                            className="p-1 hover:bg-blue-700 rounded text-white flex items-center justify-center transition-colors flex-shrink-0"
+                                        >
+                                            <Icon name="x" size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* User Profile Bar (if capital is set) */}
+                                {userProfile.capital && (
+                                    <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100 text-[10px] text-blue-800 flex justify-between items-center font-medium flex-shrink-0">
+                                        <span>💰 Vốn: {Number(userProfile.capital).toLocaleString('vi-VN')}đ</span>
+                                        <span>📍 Khu vực: {userProfile.location}</span>
+                                        {activeBusiness && <span className="truncate max-w-[120px]" title={activeBusiness}>🎯 Đang chọn: {activeBusiness}</span>}
                                     </div>
                                 )}
-                            </div>
 
-                            {/* Smart followups */}
-                            {activeBusiness && (
-                                <div className="px-3 py-1.5 border-t border-blue-55 bg-blue-50/30 flex flex-wrap gap-1">
+                                {/* Shortcut Commands */}
+                                <div className="p-2.5 border-b border-blue-100 bg-gray-50/50 flex-shrink-0">
+                                    <p className="text-[10px] text-gray-500 mb-1">Gợi ý phân tích nhanh cho "{marketKeyword || 'từ khóa'}":</p>
+                                    <div className="grid grid-cols-4 gap-1">
+                                        {quickCommands.slice(0, 4).map((cmd) => (
+                                            <button
+                                                key={cmd.id}
+                                                onClick={() => handleQuickCommand(cmd.prompt)}
+                                                disabled={chatLoading}
+                                                className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                                title={cmd.label}
+                                            >
+                                                {cmd.label}
+                                            </button>
+                                        ))}
+                                        {quickCommands.slice(4, 8).map((cmd) => (
+                                            <button
+                                                key={cmd.id}
+                                                onClick={() => handleQuickCommand(cmd.prompt)}
+                                                disabled={chatLoading}
+                                                className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                                title={cmd.label}
+                                            >
+                                                {cmd.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Messages area */}
+                                <div ref={chatContainerRef} className="overflow-y-auto p-3 space-y-3 bg-gray-50 flex-1">
+                                    {chatMessages.map((m, idx) => (
+                                        <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div 
+                                                className={`max-w-[90%] px-3 py-2 rounded-lg text-xs leading-relaxed shadow-sm ${
+                                                    m.role === 'user' 
+                                                        ? 'bg-blue-600 text-white rounded-br-none' 
+                                                        : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
+                                                }`}
+                                                dangerouslySetInnerHTML={{ __html: parseMarkdown(m.text) }}
+                                            />
+                                        </div>
+                                    ))}
+                                    {chatLoading && (
+                                        <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                                            <Icon name="loader-2" size={10} className="animate-spin text-blue-500" />
+                                            Trợ lý AI đang phân tích dữ liệu...
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Smart followups */}
+                                {activeBusiness && (
+                                    <div className="px-3 py-1.5 border-t border-blue-50 bg-blue-50/30 flex flex-wrap gap-1 flex-shrink-0">
+                                        <button
+                                            onClick={() => sendChatQuestion(`Ước tính lợi nhuận chi tiết của ý tưởng ${activeBusiness}`)}
+                                            disabled={chatLoading}
+                                            className="text-[9px] px-2 py-0.5 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium transition-colors"
+                                        >
+                                            📊 Lợi nhuận
+                                        </button>
+                                        <button
+                                            onClick={() => sendChatQuestion(`Đánh giá rủi ro và phản hồi của khách hàng về sản phẩm ${activeBusiness}`)}
+                                            disabled={chatLoading}
+                                            className="text-[9px] px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium transition-colors"
+                                        >
+                                            ⚠️ Rủi ro & Đánh giá
+                                        </button>
+                                        <button
+                                            onClick={() => sendChatQuestion(`Cho tôi một lộ trình/roadmap triển khai cụ thể để bắt đầu bán ${activeBusiness}`)}
+                                            disabled={chatLoading}
+                                            className="text-[9px] px-2 py-0.5 rounded bg-green-100 hover:bg-green-200 text-green-800 font-medium transition-colors"
+                                        >
+                                            🚀 Lộ trình triển khai
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Chat input form */}
+                                <div className="p-2.5 border-t border-blue-100 flex items-center gap-1.5 bg-white flex-shrink-0">
+                                    <input
+                                        type="text"
+                                        value={chatInput}
+                                        onChange={(e) => setChatInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
+                                        placeholder="Đặt câu hỏi tư vấn (ví dụ: tôi có 200M vốn...)"
+                                        className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
+                                    />
                                     <button
-                                        onClick={() => sendChatQuestion(`Ước tính lợi nhuận chi tiết của ý tưởng ${activeBusiness}`)}
-                                        disabled={chatLoading}
-                                        className="text-[9px] px-2 py-0.5 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium transition-colors"
+                                        onClick={handleSendChat}
+                                        disabled={chatLoading || !chatInput.trim()}
+                                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow shadow-blue-200"
                                     >
-                                        📊 Lợi nhuận
-                                    </button>
-                                    <button
-                                        onClick={() => sendChatQuestion(`Đánh giá rủi ro và phản hồi của khách hàng về sản phẩm ${activeBusiness}`)}
-                                        disabled={chatLoading}
-                                        className="text-[9px] px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium transition-colors"
-                                    >
-                                        ⚠️ Rủi ro & Đánh giá
-                                    </button>
-                                    <button
-                                        onClick={() => sendChatQuestion(`Cho tôi một lộ trình/roadmap triển khai cụ thể để bắt đầu bán ${activeBusiness}`)}
-                                        disabled={chatLoading}
-                                        className="text-[9px] px-2 py-0.5 rounded bg-green-100 hover:bg-green-200 text-green-800 font-medium transition-colors"
-                                    >
-                                        🚀 Lộ trình triển khai
+                                        Gửi
                                     </button>
                                 </div>
-                            )}
-
-                            {/* Chat input form */}
-                            <div className="p-2.5 border-t border-blue-100 flex items-center gap-1.5 bg-white">
-                                <input
-                                    type="text"
-                                    value={chatInput}
-                                    onChange={(e) => setChatInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                                    placeholder="Đặt câu hỏi tư vấn (ví dụ: tôi có 200M vốn...)"
-                                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
-                                />
-                                <button
-                                    onClick={handleSendChat}
-                                    disabled={chatLoading || !chatInput.trim()}
-                                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow shadow-blue-200"
-                                >
-                                    Gửi
-                                </button>
                             </div>
                         </div>
                     </div>
