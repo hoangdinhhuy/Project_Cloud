@@ -294,6 +294,37 @@ class DataLoader:
 
         results_df = self.products_df[mask].copy()
 
+        # Fallback 1: Nếu không có kết quả khớp chính xác cụm từ, khớp tất cả các từ đơn lẻ trong từ khóa
+        if results_df.empty and keyword_words:
+            word_masks = []
+            for word in keyword_words:
+                escaped_word = re.escape(word)
+                word_pattern = r"\b" + escaped_word + r"\b"
+                word_mask = self.products_df["name"].str.lower().str.contains(word_pattern, na=False, regex=True) | \
+                            self.products_df["category"].str.lower().str.contains(word_pattern, na=False, regex=True)
+                word_masks.append(word_mask)
+            
+            if word_masks:
+                combined_mask = word_masks[0]
+                for m in word_masks[1:]:
+                    combined_mask = combined_mask & m
+                results_df = self.products_df[combined_mask].copy()
+
+        # Fallback 2: Nếu khớp tất cả từ vẫn trống, cho phép khớp linh hoạt hơn không có \b (nửa từ, hoặc ký tự đặc biệt)
+        if results_df.empty and keyword_words:
+            word_masks = []
+            for word in keyword_words:
+                escaped_word = re.escape(word)
+                word_mask = self.products_df["name"].str.lower().str.contains(escaped_word, na=False) | \
+                            self.products_df["category"].str.lower().str.contains(escaped_word, na=False)
+                word_masks.append(word_mask)
+            
+            if word_masks:
+                combined_mask = word_masks[0]
+                for m in word_masks[1:]:
+                    combined_mask = combined_mask & m
+                results_df = self.products_df[combined_mask].copy()
+
         if results_df.empty:
             return []
 

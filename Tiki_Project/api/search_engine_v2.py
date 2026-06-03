@@ -6,6 +6,7 @@ import json
 import logging
 from typing import Dict, List, Any
 import google.generativeai as genai
+from gemini_helper import gemini_manager
 
 logger = logging.getLogger(__name__)
 
@@ -97,21 +98,15 @@ class SearchEngine:
         self, products: List[Dict], keyword: str, include_ml_insights: bool = True
     ) -> str:
         """
-        🚀 ENHANCED: Generate DETAILED AI insight (500+ words)
+        🚀 Generate market insights using the offline fallback analyzer (does not call Gemini API for speed).
         """
         if not products:
             return f"Không tìm thấy sản phẩm nào phù hợp với '{keyword}'. Vui lòng thử từ khóa khác."
-
-        # ============================================================
-        # 🔥 BUILD RICH CONTEXT - More data = better insights!
-        # ============================================================
 
         # 1. Basic stats
         avg_price = sum(p["price"] for p in products) / len(products)
         avg_rating = sum(p["rating"] for p in products) / len(products)
         total_sold = sum(p["boughtInLastMonth"] for p in products)
-        max_price = max(p["price"] for p in products)
-        min_price = min(p["price"] for p in products)
 
         # 2. Price segmentation
         budget_products = [p for p in products if p["price"] < avg_price * 0.7]
@@ -120,175 +115,16 @@ class SearchEngine:
         ]
         premium_products = [p for p in products if p["price"] > avg_price * 1.3]
 
-        # 3. Category distribution
-        categories = {}
-        for p in products:
-            cat = p["categoryName"]
-            categories[cat] = categories.get(cat, 0) + 1
-
-        top_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)[
-            :3
-        ]
-
-        # 4. Get ML insights
-        ml_insights = (
-            self._get_detailed_ml_insights(products) if include_ml_insights else ""
+        return self._generate_fallback_insight(
+            keyword,
+            products,
+            avg_price,
+            avg_rating,
+            total_sold,
+            budget_products,
+            mid_products,
+            premium_products,
         )
-
-        # 5. Top 5 products details
-        top_5_details = ""
-        for i, p in enumerate(products[:5], 1):
-            top_5_details += f"""
-{i}. **{p['title']}**
-   - 💰 Giá: {p['price']:,.0f} VND
-   - ⭐ Rating: {p['rating']}/5.0 ({p.get('reviewCount', 'N/A')} đánh giá)
-   - 🛒 Đã bán: {p['boughtInLastMonth']:,} trong tháng qua
-   - 📦 Danh mục: {p['categoryName']}
-"""
-
-        # ============================================================
-        # 🎯 GEMINI PROMPT - ROLE + JSON data, per-product reasoning
-        # ============================================================
-
-        # Pre-compute deltas so Gemini reasons on numbers, not raw values
-        top_3_data = [
-            {
-                "rank": i,
-                "title": p["title"],
-                "price_vnd": p["price"],
-                "price_vs_avg_pct": (
-                    round((p["price"] - avg_price) / avg_price * 100, 1)
-                    if avg_price
-                    else 0
-                ),
-                "rating": p["rating"],
-                "rating_vs_avg": round(p["rating"] - avg_rating, 2),
-                "sold_monthly": p["boughtInLastMonth"],
-                "category": p["categoryName"],
-            }
-            for i, p in enumerate(products[:3], 1)
-        ]
-        top_3_json = json.dumps(top_3_data, ensure_ascii=False, indent=2)
-
-        ml_section = (
-            f"\n# TÍN HIỆU TỪ MÔ HÌNH ML (KMeans / Prophet / PhoBERT):\n{ml_insights}\n"
-            if ml_insights
-            else ""
-        )
-
-        prompt = f"""# ROLE:
-Bạn là một AI Business Consultant chuyên nghiệp cho sàn Tiki. Nhiệm vụ của bạn là viết báo cáo phân tích thị trường dựa trên dữ liệu sản phẩm thực tế, giúp merchant đưa ra quyết định kinh doanh chính xác.
-
-# INPUT DATA:
-- Keyword: "{keyword}"
-- Tổng sản phẩm: {len(products)} | Giá TB: {avg_price:,.0f} VND | Khoảng giá: {min_price:,.0f}–{max_price:,.0f} VND
-- Rating TB: {avg_rating:.1f}/5.0 | Tổng bán/tháng: {total_sold:,} sản phẩm
-- Phân khúc: Bình dân {len(budget_products)} sp / Trung cấp {len(mid_products)} sp / Cao cấp {len(premium_products)} sp
-- Danh mục phổ biến: {', '.join(f"{cat} ({count} sp)" for cat, count in top_categories)}
-{ml_section}
-# CHI TIẾT TOP 3 SẢN PHẨM (JSON):
-```json
-{top_3_json}
-```
-(`price_vs_avg_pct` = % chênh lệch giá so TB thị trường; `rating_vs_avg` = chênh lệch rating so TB)
-
-# GUIDELINES:
-1. KHÔNG viết theo kiểu template "điền vào chỗ trống" — mỗi sản phẩm cần một nhận xét riêng, khác nhau về góc nhìn và lời khuyên.
-2. PHẦN TOP 3: Dùng `price_vs_avg_pct` và `rating_vs_avg` để lý giải tại sao sản phẩm đó thành công hoặc còn hạn chế. Kết bằng một lời khuyên hành động cụ thể cho từng sản phẩm.
-3. CHIẾN LƯỢC: Xác định phân khúc nào ít đối thủ (Blue Ocean) và phân khúc nào bão hòa (Red Ocean) dựa trên số lượng sản phẩm thực tế.
-4. Nếu có tín hiệu ML (sentiment, dự báo giá, cluster), hãy kết hợp vào phân tích — đặc biệt ở phần Kế hoạch hành động.
-5. TÔNG GIỌNG: Chuyên nghiệp, sắc sảo, súc tích — như một chuyên gia tư vấn chiến lược thực thụ.
-
-# OUTPUT FORMAT (Markdown, tiếng Việt, có emoji):
-Giữ đúng 5 phần:
-
-**1. TỔNG QUAN THỊ TRƯỜNG**
-**2. PHÂN TÍCH PHÂN KHÚC GIÁ**
-**3. TOP 3 SẢN PHẨM XUẤT SẮC** (phân tích riêng từng sản phẩm, không lặp văn mẫu)
-**4. CƠ HỘI & RỦI RO** (dựa trên khoảng trống thị trường)
-**5. KẾ HOẠCH HÀNH ĐỘNG** (3 bước cụ thể, liên quan trực tiếp đến dữ liệu đã phân tích)
-"""
-        # 🎯 GEMINI PROMPT - ROLE + JSON data, per-product reasoning
-        # ============================================================
-
-        # Pre-compute deltas so Gemini reasons on numbers, not raw values
-        top_3_data = [
-            {
-                "rank": i,
-                "title": p["title"],
-                "price_vnd": p["price"],
-                "price_vs_avg_pct": (
-                    round((p["price"] - avg_price) / avg_price * 100, 1)
-                    if avg_price
-                    else 0
-                ),
-                "rating": p["rating"],
-                "rating_vs_avg": round(p["rating"] - avg_rating, 2),
-                "sold_monthly": p["boughtInLastMonth"],
-                "category": p["categoryName"],
-            }
-            for i, p in enumerate(products[:3], 1)
-        ]
-        top_3_json = json.dumps(top_3_data, ensure_ascii=False, indent=2)
-
-        ml_section = (
-            f"\n# TÍN HIỆU TỪ MÔ HÌNH ML (KMeans / Prophet / PhoBERT):\n{ml_insights}\n"
-            if ml_insights
-            else ""
-        )
-
-        prompt = f"""# ROLE:
-Bạn là một AI Business Consultant chuyên nghiệp cho sàn Tiki. Nhiệm vụ của bạn là viết báo cáo phân tích thị trường dựa trên dữ liệu sản phẩm thực tế, giúp merchant đưa ra quyết định kinh doanh chính xác.
-
-# INPUT DATA:
-- Keyword: "{keyword}"
-- Tổng sản phẩm: {len(products)} | Giá TB: {avg_price:,.0f} VND | Khoảng giá: {min_price:,.0f}–{max_price:,.0f} VND
-- Rating TB: {avg_rating:.1f}/5.0 | Tổng bán/tháng: {total_sold:,} sản phẩm
-- Phân khúc: Bình dân {len(budget_products)} sp / Trung cấp {len(mid_products)} sp / Cao cấp {len(premium_products)} sp
-- Danh mục phổ biến: {', '.join(f"{cat} ({count} sp)" for cat, count in top_categories)}
-{ml_section}
-# CHI TIẾT TOP 3 SẢN PHẨM (JSON):
-```json
-{top_3_json}
-```
-(`price_vs_avg_pct` = % chênh lệch giá so TB thị trường; `rating_vs_avg` = chênh lệch rating so TB)
-
-# GUIDELINES:
-1. KHÔNG viết theo kiểu template "điền vào chỗ trống" — mỗi sản phẩm cần một nhận xét riêng, khác nhau về góc nhìn và lời khuyên.
-2. PHẦN TOP 3: Dùng `price_vs_avg_pct` và `rating_vs_avg` để lý giải tại sao sản phẩm đó thành công hoặc còn hạn chế. Kết bằng một lời khuyên hành động cụ thể cho từng sản phẩm.
-3. CHIẾN LƯỢC: Xác định phân khúc nào ít đối thủ (Blue Ocean) và phân khúc nào bão hòa (Red Ocean) dựa trên số lượng sản phẩm thực tế.
-4. Nếu có tín hiệu ML (sentiment, dự báo giá, cluster), hãy kết hợp vào phân tích — đặc biệt ở phần Kế hoạch hành động.
-5. TÔNG GIỌNG: Chuyên nghiệp, sắc sảo, súc tích — như một chuyên gia tư vấn chiến lược thực thụ.
-
-# OUTPUT FORMAT (Markdown, tiếng Việt, có emoji):
-Giữ đúng 5 phần:
-
-**1. TỔNG QUAN THỊ TRƯỜNG**
-**2. PHÂN TÍCH PHÂN KHÚC GIÁ**
-**3. TOP 3 SẢN PHẨM XUẤT SẮC** (phân tích riêng từng sản phẩm, không lặp văn mẫu)
-**4. CƠ HỘI & RỦI RO** (dựa trên khoảng trống thị trường)
-**5. KẾ HOẠCH HÀNH ĐỘNG** (3 bước cụ thể, liên quan trực tiếp đến dữ liệu đã phân tích)
-"""
-
-        try:
-            # 🚀 Call Gemini with enhanced prompt
-            response = self.gemini_model.generate_content(prompt)
-            return response.text
-
-        except Exception as e:
-            logger.error(f"Gemini insight generation failed: {e}")
-
-            # Enhanced fallback
-            return self._generate_fallback_insight(
-                keyword,
-                products,
-                avg_price,
-                avg_rating,
-                total_sold,
-                budget_products,
-                mid_products,
-                premium_products,
-            )
 
     def _get_detailed_ml_insights(self, products: List[Dict]) -> str:
         """Get ML insights: KMeans from CSV centroids, price trend from timeseries, sentiment from reviews"""
@@ -1077,7 +913,7 @@ Giữ đúng 5 phần:
         }
 
     def _generate_batch_insight(self, keywords: List[str], products: List[Dict]) -> str:
-        """Generate ENHANCED batch insight"""
+        """Generate batch insight without calling Gemini API (offline fallback)"""
         if not products:
             return "Không tìm thấy sản phẩm nào cho các từ khóa đã nhập."
 
@@ -1091,42 +927,21 @@ Giữ đúng 5 phần:
             categories[cat] = categories.get(cat, 0) + 1
 
         top_cats = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
-
-        context = f"""Phân tích BATCH cho {len(keywords)} từ khóa: {', '.join(keywords[:5])}{"..." if len(keywords) > 5 else ""}
-
-**Kết quả tổng hợp:**
-- Tổng sản phẩm độc nhất: {len(products)}
-- Tổng doanh thu ước tính: {total_revenue:,.0f} VND
-- Giá trung bình: {avg_price:,.0f} VND
-- Số danh mục: {len(categories)}
-
-**Top 5 danh mục:**
-{chr(10).join(f"{i}. {cat}: {count} sản phẩm ({count/len(products)*100:.1f}%)" for i, (cat, count) in enumerate(top_cats, 1))}
-"""
-
-        prompt = f"""{context}
-
-Viết báo cáo phân tích BATCH (300-400 từ) với các phần:
-
-1. **Xu hướng tổng thể:** Nhận xét về keywords và danh mục
-2. **Phân tích cơ hội:** Keywords/danh mục nào tiềm năng nhất?
-3. **So sánh keywords:** Keywords nào cạnh tranh cao/thấp?
-4. **Khuyến nghị:** Chiến lược cho việc kinh doanh nhiều sản phẩm
-
-Viết chi tiết, có con số cụ thể, tập trung vào ACTIONABLE insights!
-"""
-
-        try:
-            response = self.gemini_model.generate_content(prompt)
-            return response.text
-        except:
-            return f"""📊 **PHÂN TÍCH BATCH: {len(keywords)} TỪ KHÓA**
+        
+        top_cats_lines = []
+        for i, (cat, count) in enumerate(top_cats[:3], 1):
+            pct = count / len(products) * 100
+            top_cats_lines.append(f"- {cat}: {count} sản phẩm ({pct:.1f}%)")
+            
+        top_cats_str = "\n".join(top_cats_lines)
+            
+        return f"""📊 **PHÂN TÍCH BATCH: {len(keywords)} TỪ KHÓA**
 
 Đã phân tích {len(keywords)} từ khóa, tìm thấy {len(products)} sản phẩm độc nhất thuộc {len(categories)} danh mục.
 
 **Danh mục nổi bật:**
-{chr(10).join(f"- {cat}: {count} sản phẩm" for cat, count in top_cats[:3])}
+{top_cats_str}
 
 **Nhận định:**
-Thị trường đa dạng với nhiều cơ hội. Tập trung vào top categories để tối ưu doanh thu.
+Thị trường đa dạng với nhiều cơ hội. Tập trung vào các danh mục nổi bật để tối ưu doanh thu.
 """

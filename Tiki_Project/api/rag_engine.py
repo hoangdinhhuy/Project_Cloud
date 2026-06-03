@@ -11,6 +11,7 @@ from chromadb.config import Settings as ChromaSettings
 from langchain.vectorstores import Chroma
 from langchain.embeddings import SentenceTransformerEmbeddings
 import google.generativeai as genai
+from gemini_helper import gemini_manager
 
 logger = logging.getLogger(__name__)
 
@@ -69,24 +70,11 @@ class RAGEngine:
             raise
         
         # 3. Configure Gemini API
-        logger.info("   Configuring Gemini API...")
+        logger.info("   Configuring Gemini API via GeminiManager...")
         try:
-            genai.configure(api_key=gemini_api_key)
-            
-            # Find available model
-            available_models = []
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
-            
-            if not available_models:
-                raise ValueError("No Gemini models available")
-            
-            self.model_name = available_models[0]
-            self.model = genai.GenerativeModel(self.model_name)
-            
+            self.model_name = "gemini-flash-latest"
+            self.model = gemini_manager.get_model(self.model_name)
             logger.info(f"   ✅ Gemini configured (model: {self.model_name})")
-            
         except Exception as e:
             logger.error(f"   ❌ Failed to configure Gemini: {e}")
             raise
@@ -148,7 +136,12 @@ Answer (be concise and factual):"""
         
         # Step 4: Generate answer with Gemini
         generation_start = time.time()
-        response = self.model.generate_content(prompt)
+        
+        def run_gen():
+            model = gemini_manager.get_model(self.model_name)
+            return model.generate_content(prompt)
+            
+        response = gemini_manager.execute_with_retry(run_gen)
         generation_time = time.time() - generation_start
         
         total_time = time.time() - start_time

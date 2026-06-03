@@ -57,17 +57,23 @@ def main():
     else:
         print("✅ .env file found")
         
-        # Check required env vars
-        required_vars = ['GEMINI_API_KEY', 'DATA_PATH', 'MODELS_PATH', 'CHROMA_DB_PATH']
-        for var in required_vars:
+        # Check GEMINI_API_KEY (PRIMARY provider for chat)
+        gemini_key = os.getenv('GEMINI_API_KEY', '')
+        if gemini_key:
+            key_count = len([k for k in gemini_key.split(',') if k.strip()])
+            print(f"✅ GEMINI_API_KEY: {key_count} key(s) configured [PRIMARY CHAT PROVIDER]")
+        else:
+            print("❌ GEMINI_API_KEY not set in .env (required for chat!)")
+            issues.append("GEMINI_API_KEY not configured (primary chat provider)")
+        
+        # Check data path vars
+        for var in ['DATA_PATH', 'MODELS_PATH', 'CHROMA_DB_PATH']:
             value = os.getenv(var)
             if not value:
                 print(f"❌ {var} not set in .env")
                 issues.append(f"{var} not configured")
             else:
-                # Don't print full API key
-                display = value[:20] + "..." if var == 'GEMINI_API_KEY' else value
-                print(f"✅ {var}: {display}")
+                print(f"✅ {var}: {value}")
     
     # 2. Check data files
     print("\n📦 Checking data files...")
@@ -183,31 +189,31 @@ def main():
     # 5. Check Python packages
     print("\n📚 Checking Python packages...")
     required_packages = [
-        'fastapi',
-        'uvicorn',
-        'chromadb',
-        'sentence_transformers',
-        'google.generativeai',
-        'sklearn',
-        'prophet',
-        'torch',
-        'transformers',
+        ('fastapi', 'fastapi', True),
+        ('uvicorn', 'uvicorn', True),
+        ('groq', 'groq', False),
+        ('chromadb', 'chromadb', True),
+        ('sentence_transformers', 'sentence_transformers', True),
+        ('google.generativeai', 'google.generativeai', False),
+        ('sklearn', 'sklearn', True),
+        ('prophet', 'prophet', False),
+        ('torch', 'torch', True),
+        ('transformers', 'transformers', True),
     ]
     
     missing_packages = []
-    for package in required_packages:
+    for display_name, import_name, is_required in required_packages:
         try:
-            if package == 'google.generativeai':
-                __import__('google.generativeai')
-            elif package == 'sklearn':
-                __import__('sklearn')
-            else:
-                __import__(package)
-            print(f"✅ {package}")
+            __import__(import_name)
+            label = '' if is_required else ' (optional)'
+            print(f"✅ {display_name}{label}")
         except ImportError:
-            print(f"❌ {package} not installed")
-            missing_packages.append(package)
-            issues.append(f"Package {package} missing")
+            if is_required:
+                print(f"❌ {display_name} not installed")
+                missing_packages.append(display_name)
+                issues.append(f"Package {display_name} missing")
+            else:
+                print(f"⚠️  {display_name} not installed (optional)")
     
     # 6. Summary
     print("\n" + "=" * 60)

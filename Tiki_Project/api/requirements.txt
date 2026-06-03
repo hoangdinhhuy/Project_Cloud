@@ -48,3 +48,4 @@ grpcio-status>=1.59.0
 
 # Utilities
 python-dotenv==1.0.0
+groq==1.4.0

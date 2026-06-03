@@ -45,6 +45,7 @@ function App() {
                     {navItems.map(({ tab, icon, label }) => (
                         <button
                             key={tab}
+                            type="button"
                             onClick={() => setActiveTab(tab)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                                 activeTab === tab
@@ -87,9 +88,15 @@ function App() {
 
                 {/* Scrollable page area */}
                 <main className="flex-1 overflow-y-auto p-8 scroll-smooth bg-gradient-to-b from-white to-blue-50">
-                    {activeTab === 'market-report' && <MarketReportPage />}
-                    {activeTab === 'batch'         && <BatchPage />}
-                    {activeTab === 'market'        && <MarketInsightPage />}
+                    <div style={{ display: activeTab === 'market-report' ? 'block' : 'none' }}>
+                        <MarketReportPage />
+                    </div>
+                    <div style={{ display: activeTab === 'batch' ? 'block' : 'none' }}>
+                        <BatchPage />
+                    </div>
+                    <div style={{ display: activeTab === 'market' ? 'block' : 'none' }}>
+                        <MarketInsightPage />
+                    </div>
                 </main>
 
             </div>

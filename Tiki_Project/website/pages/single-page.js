@@ -2,9 +2,103 @@
 // 🔍 SINGLE PAGE — Phân tích đơn (từ khóa)
 // ============================================================
 
+const parseMarkdown = (text) => {
+    if (!text) return '';
+    let html = text;
+    
+    // Escape standard tags to prevent XSS but preserve layout
+    html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Bold: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Italic: *text* -> <em>text</em>
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Inline code: `code` -> <code>code</code>
+    html = html.replace(/`(.*?)`/g, '<code class="bg-gray-100 text-red-600 px-1 rounded">$1</code>');
+    
+    const lines = html.split('\n');
+    let inTable = false;
+    let tableHtml = '';
+    let finalLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('|') && line.endsWith('|')) {
+            if (!inTable) {
+                inTable = true;
+                tableHtml = '<div class="overflow-x-auto my-3"><table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg text-[10px] bg-white">';
+            }
+            
+            const cells = line.split('|').slice(1, -1).map(c => c.trim());
+            // Skip the separator row |---|---|
+            if (cells.every(c => c.match(/^:?-+:?$/))) {
+                continue;
+            }
+            
+            const isHeader = !tableHtml.includes('<tbody');
+            if (isHeader && !tableHtml.includes('<thead')) {
+                tableHtml += '<thead><tr class="bg-blue-50/70">';
+                cells.forEach(c => {
+                    tableHtml += `<th class="px-2 py-1.5 text-left font-bold text-blue-900 border-b border-gray-200">${c}</th>`;
+                });
+                tableHtml += '</tr></thead><tbody>';
+            } else {
+                tableHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100">';
+                cells.forEach(c => {
+                    tableHtml += `<td class="px-2 py-1.5 text-gray-700">${c}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+        } else {
+            if (inTable) {
+                inTable = false;
+                tableHtml += '</tbody></table></div>';
+                finalLines.push(tableHtml);
+                tableHtml = '';
+            }
+            finalLines.push(lines[i]);
+        }
+    }
+    if (inTable) {
+        tableHtml += '</tbody></table></div>';
+        finalLines.push(tableHtml);
+    }
+    
+    html = finalLines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            return `<li class="ml-4 list-disc my-0.5 text-gray-700">${trimmed.substring(2)}</li>`;
+        }
+        if (trimmed.startsWith('1. ') || trimmed.startsWith('2. ') || trimmed.startsWith('3. ')) {
+            return `<li class="ml-4 list-decimal my-0.5 text-gray-700">${trimmed.substring(3)}</li>`;
+        }
+        if (trimmed.startsWith('### ')) {
+            return `<h4 class="font-bold text-gray-900 text-xs mt-3 mb-1">${trimmed.substring(4)}</h4>`;
+        }
+        if (trimmed.startsWith('## ')) {
+            return `<h3 class="font-bold text-blue-800 text-sm mt-3.5 mb-1.5">${trimmed.substring(3)}</h3>`;
+        }
+        if (trimmed.startsWith('# ')) {
+            return `<h2 class="font-bold text-blue-900 text-base mt-4 mb-2 border-b border-blue-100 pb-0.5">${trimmed.substring(2)}</h2>`;
+        }
+        return line;
+    }).join('\n');
+    
+    return html.replace(/\n/g, '<br/>');
+};
+
 function SinglePage() {
     const { useState, useEffect } = React;
+    const chatContainerRef = React.useRef(null);
     const SEARCH_HISTORY_KEY = 'tiki_search_history_v1';
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatMessages, isChatOpen]);
     const HISTORY_LIMIT = 12;
 
     const [keyword, setKeyword] = useState('');
@@ -14,10 +108,26 @@ function SinglePage() {
     const [contextInfo, setContextInfo] = useState(null);
     const [analytics, setAnalytics] = useState(null);
     const [searchHistory, setSearchHistory] = useState([]);
+    
+    // Persistent Session ID
+    const [sessionId] = useState(() => {
+        const key = 'tiki_ai_assistant_session_id';
+        let sid = localStorage.getItem(key);
+        if (!sid) {
+            sid = 'sess_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem(key, sid);
+        }
+        return sid;
+    });
+
+    // Profile & Context state
+    const [userProfile, setUserProfile] = useState({ capital: null, location: 'TP.HCM', interest: null, experience: null });
+    const [activeBusiness, setActiveBusiness] = useState(null);
+
     const [chatMessages, setChatMessages] = useState([
         {
             role: 'assistant',
-            text: 'Xin chao! Toi la chatbot ho tro phan tich. Ban co the hoi ve gia, doanh thu, top san pham, hoac nhap mot tu khoa moi de toi phan tich nhanh.'
+            text: '👋 Xin chào! Tôi là Trợ lý AI Tư vấn Kinh doanh trên sàn Tiki.\n\nTôi có thể đề xuất các mô hình kinh doanh phù hợp với vốn, phân tích doanh thu/lợi nhuận thực tế, đánh giá rủi ro và lập kế hoạch triển khai từng bước.\n\n👉 Để bắt đầu, bạn dự kiến đầu tư số vốn khoảng bao nhiêu không?'
         }
     ]);
     const [chatInput, setChatInput] = useState('');
@@ -154,28 +264,35 @@ function SinglePage() {
         setChatLoading(true);
 
         try {
-            const asksForNewAnalysis = /(phan tich|tim|tra cuu|keyword|tu khoa|xem)/i.test(question) && question.length > 8;
-            if (asksForNewAnalysis && !/(gia|doanh thu|top|so luong|rating|tom tat)/i.test(question)) {
-                const data = await runSingleAnalysis(question, null);
-                setChatMessages((prev) => [
-                    ...prev,
-                    {
-                        role: 'assistant',
-                        text: `Da phan tich tu khoa "${question}". Toi da cap nhat bang ket qua moi, ban co the hoi tiep de dao sau.`
-                    }
-                ]);
-                if (data && data.insight) {
-                    setChatMessages((prev) => [
-                        ...prev,
-                        { role: 'assistant', text: `Tom tat AI: ${String(data.insight).slice(0, 260)}...` }
-                    ]);
+            const res = await fetch(`${API_BASE_URL}/api/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: question,
+                    session_id: sessionId
+                })
+            });
+            
+            if (!res.ok) {
+                throw new Error(`Server returned HTTP ${res.status}`);
+            }
+            
+            const data = await res.json();
+            if (data.success) {
+                setChatMessages((prev) => [...prev, { role: 'assistant', text: data.response }]);
+                if (data.profile) {
+                    setUserProfile(data.profile);
+                }
+                if (data.active_business) {
+                    setActiveBusiness(data.active_business);
                 }
             } else {
-                const reply = summarizeForChat(question);
-                setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+                setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi: ${data.response || 'Không thể xử lý yêu cầu'}` }]);
             }
         } catch (error) {
-            setChatMessages((prev) => [...prev, { role: 'assistant', text: `Loi chatbot: ${error.message}` }]);
+            setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi kết nối: ${error.message}` }]);
         } finally {
             setChatLoading(false);
             setTimeout(() => lucide.createIcons(), 100);
@@ -308,30 +425,53 @@ function SinglePage() {
                 </div>
 
                 {isChatOpen && (
-                    <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[390px] z-40">
-                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl">
-                            <div className="p-3 border-b border-blue-100 bg-blue-50 flex items-center justify-between gap-2">
+                    <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[410px] z-40">
+                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl flex flex-col max-h-[500px]">
+                            {/* Header */}
+                            <div className="p-3 border-b border-blue-100 bg-blue-600 text-white flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
-                                    <Icon name="bot" size={18} className="text-blue-500" />
-                                    <h3 className="font-bold text-gray-900 text-sm">Tro ly chat san pham</h3>
+                                    <Icon name="sparkles" size={18} className="text-white fill-current animate-pulse" />
+                                    <h3 className="font-bold text-sm">AI Business Assistant</h3>
                                 </div>
                                 <button
                                     onClick={() => setIsChatOpen(false)}
-                                    className="text-gray-700 hover:text-gray-900"
+                                    className="text-white hover:text-blue-100"
                                 >
                                     <Icon name="x" size={16} />
                                 </button>
                             </div>
 
-                            <div className="p-3 border-b border-blue-100 bg-gray-50">
-                                <p className="text-[11px] text-gray-500 mb-2">8 cau lenh nhanh:</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {quickCommands.map((cmd) => (
+                            {/* User Profile Bar (if capital is set) */}
+                            {userProfile.capital && (
+                                <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100 text-[10px] text-blue-800 flex justify-between items-center font-medium">
+                                    <span>💰 Vốn: {Number(userProfile.capital).toLocaleString('vi-VN')}đ</span>
+                                    <span>📍 Khu vực: {userProfile.location}</span>
+                                    {activeBusiness && <span className="truncate max-w-[120px]" title={activeBusiness}>🎯 Đang chọn: {activeBusiness}</span>}
+                                </div>
+                            )}
+
+                            {/* Shortcut Commands */}
+                            <div className="p-2.5 border-b border-blue-100 bg-gray-50/50">
+                                <p className="text-[10px] text-gray-500 mb-1">Gợi ý phân tích nhanh cho "{keyword || 'từ khóa'}":</p>
+                                <div className="grid grid-cols-4 gap-1">
+                                    {quickCommands.slice(0, 4).map((cmd) => (
                                         <button
                                             key={cmd.id}
                                             onClick={() => handleQuickCommand(cmd.prompt)}
                                             disabled={chatLoading}
-                                            className="text-xs px-2.5 py-2 rounded-lg border border-gray-300 text-gray-800 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                            title={cmd.label}
+                                        >
+                                            {cmd.label}
+                                        </button>
+                                    ))}
+                                    {quickCommands.slice(4, 8).map((cmd) => (
+                                        <button
+                                            key={cmd.id}
+                                            onClick={() => handleQuickCommand(cmd.prompt)}
+                                            disabled={chatLoading}
+                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                            title={cmd.label}
                                         >
                                             {cmd.label}
                                         </button>
@@ -339,35 +479,71 @@ function SinglePage() {
                                 </div>
                             </div>
 
-                            <div className="h-72 overflow-y-auto p-3 space-y-3 bg-gray-50">
+                            {/* Messages area */}
+                            <div ref={chatContainerRef} className="h-64 overflow-y-auto p-3 space-y-3 bg-gray-50 flex-1">
                                 {chatMessages.map((m, idx) => (
                                     <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[88%] px-3 py-2 rounded-lg text-xs leading-relaxed ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'
-                                            }`}>
-                                            {m.text}
-                                        </div>
+                                        <div 
+                                            className={`max-w-[90%] px-3 py-2 rounded-lg text-xs leading-relaxed shadow-sm ${
+                                                m.role === 'user' 
+                                                    ? 'bg-blue-600 text-white rounded-br-none' 
+                                                    : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: parseMarkdown(m.text) }}
+                                        />
                                     </div>
                                 ))}
                                 {chatLoading && (
-                                    <div className="text-xs text-gray-500">Chatbot dang tra loi...</div>
+                                    <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                                        <Icon name="loader-2" size={10} className="animate-spin text-blue-500" />
+                                        Trợ lý AI đang phân tích dữ liệu...
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="p-3 border-t border-blue-100 flex items-center gap-2">
+                            {/* Smart followups */}
+                            {activeBusiness && (
+                                <div className="px-3 py-1.5 border-t border-blue-50 bg-blue-50/30 flex flex-wrap gap-1">
+                                    <button
+                                        onClick={() => sendChatQuestion(`Ước tính lợi nhuận chi tiết của ý tưởng ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium transition-colors"
+                                    >
+                                        📊 Lợi nhuận
+                                    </button>
+                                    <button
+                                        onClick={() => sendChatQuestion(`Đánh giá rủi ro và phản hồi của khách hàng về sản phẩm ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium transition-colors"
+                                    >
+                                        ⚠️ Rủi ro & Đánh giá
+                                    </button>
+                                    <button
+                                        onClick={() => sendChatQuestion(`Cho tôi một lộ trình/roadmap triển khai cụ thể để bắt đầu bán ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-green-100 hover:bg-green-200 text-green-800 font-medium transition-colors"
+                                    >
+                                        🚀 Lộ trình triển khai
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Chat input form */}
+                            <div className="p-2.5 border-t border-blue-100 flex items-center gap-1.5 bg-white">
                                 <input
                                     type="text"
                                     value={chatInput}
                                     onChange={(e) => setChatInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                                    placeholder="Nhap cau hoi..."
-                                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
+                                    placeholder="Đặt câu hỏi tư vấn (ví dụ: tôi có 200M vốn...)"
+                                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
                                 />
                                 <button
                                     onClick={handleSendChat}
                                     disabled={chatLoading || !chatInput.trim()}
-                                    className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-semibold"
+                                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow shadow-blue-200"
                                 >
-                                    Gui
+                                    Gửi
                                 </button>
                             </div>
                         </div>

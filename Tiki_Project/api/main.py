@@ -16,6 +16,7 @@ import pandas as pd
 from data_loader import DataLoader
 from model_loader import ModelLoader
 from search_engine_v2 import SearchEngine
+from chat_assistant import AIBusinessAssistant
 from config import settings
 
 # Setup logging
@@ -48,6 +49,7 @@ rag_engine: Optional[Any] = None
 data_loader: Optional[DataLoader] = None
 model_loader: Optional[ModelLoader] = None
 search_engine: Optional[SearchEngine] = None
+assistant: Optional[Any] = None
 
 # Request/Response models
 class SearchRequest(BaseModel):
@@ -56,6 +58,10 @@ class SearchRequest(BaseModel):
     limit: int = Field(default=9999, ge=1) 
     display_limit: int = Field(default=20, ge=1)
     context_id: Optional[str] = Field(default=None, max_length=50)
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str
 
 class Product(BaseModel):
     product_id: str
@@ -79,7 +85,7 @@ class HealthResponse(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
-    global rag_engine, data_loader, model_loader, search_engine
+    global rag_engine, data_loader, model_loader, search_engine, assistant
     
     logger.info("🚀 Starting Tiki RAG API...")
     
@@ -115,6 +121,14 @@ async def startup_event():
             gemini_model=rag_engine.model if rag_engine else None
         )
         
+        # 5. Initialize AI Business Assistant
+        logger.info("🤖 Initializing AI Business Assistant...")
+        try:
+            assistant = AIBusinessAssistant(search_engine=search_engine)
+            logger.info("✅ AI Business Assistant Ready!")
+        except Exception as chat_error:
+            logger.warning(f"⚠️ AI Business Assistant disabled due to issue: {chat_error}")
+            
         logger.info("✅ API Ready!")
         
     except Exception as e:
@@ -558,6 +572,20 @@ async def analyze_batch(
         raise
     except Exception as e:
         logger.error(f"Batch analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/chat")
+async def chat_assistant(request: ChatRequest):
+    if assistant is None:
+        raise HTTPException(
+            status_code=503,
+            detail="AI Business Assistant is not initialized."
+        )
+    try:
+        res = assistant.chat(session_id=request.session_id, message=request.message)
+        return res
+    except Exception as e:
+        logger.error(f"AI Chat failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/stats")

@@ -2,21 +2,106 @@
 // 📂 BATCH PAGE — Phân tích loạt (CSV)
 // ============================================================
 
+const parseMarkdown = (text) => {
+    if (!text) return '';
+    let html = text;
+    
+    // Escape standard tags to prevent XSS but preserve layout
+    html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Bold: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Italic: *text* -> <em>text</em>
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Inline code: `code` -> <code>code</code>
+    html = html.replace(/`(.*?)`/g, '<code class="bg-gray-100 text-red-600 px-1 rounded">$1</code>');
+    
+    const lines = html.split('\n');
+    let inTable = false;
+    let tableHtml = '';
+    let finalLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('|') && line.endsWith('|')) {
+            if (!inTable) {
+                inTable = true;
+                tableHtml = '<div class="overflow-x-auto my-3"><table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg text-[10px] bg-white">';
+            }
+            
+            const cells = line.split('|').slice(1, -1).map(c => c.trim());
+            // Skip the separator row |---|---|
+            if (cells.every(c => c.match(/^:?-+:?$/))) {
+                continue;
+            }
+            
+            const isHeader = !tableHtml.includes('<tbody');
+            if (isHeader && !tableHtml.includes('<thead')) {
+                tableHtml += '<thead><tr class="bg-blue-50/70">';
+                cells.forEach(c => {
+                    tableHtml += `<th class="px-2 py-1.5 text-left font-bold text-blue-900 border-b border-gray-200">${c}</th>`;
+                });
+                tableHtml += '</tr></thead><tbody>';
+            } else {
+                tableHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100">';
+                cells.forEach(c => {
+                    tableHtml += `<td class="px-2 py-1.5 text-gray-700">${c}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+        } else {
+            if (inTable) {
+                inTable = false;
+                tableHtml += '</tbody></table></div>';
+                finalLines.push(tableHtml);
+                tableHtml = '';
+            }
+            finalLines.push(lines[i]);
+        }
+    }
+    if (inTable) {
+        tableHtml += '</tbody></table></div>';
+        finalLines.push(tableHtml);
+    }
+    
+    html = finalLines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            return `<li class="ml-4 list-disc my-0.5 text-gray-700">${trimmed.substring(2)}</li>`;
+        }
+        if (trimmed.startsWith('1. ') || trimmed.startsWith('2. ') || trimmed.startsWith('3. ')) {
+            return `<li class="ml-4 list-decimal my-0.5 text-gray-700">${trimmed.substring(3)}</li>`;
+        }
+        if (trimmed.startsWith('### ')) {
+            return `<h4 class="font-bold text-gray-900 text-xs mt-3 mb-1">${trimmed.substring(4)}</h4>`;
+        }
+        if (trimmed.startsWith('## ')) {
+            return `<h3 class="font-bold text-blue-800 text-sm mt-3.5 mb-1.5">${trimmed.substring(3)}</h3>`;
+        }
+        if (trimmed.startsWith('# ')) {
+            return `<h2 class="font-bold text-blue-900 text-base mt-4 mb-2 border-b border-blue-100 pb-0.5">${trimmed.substring(2)}</h2>`;
+        }
+        return line;
+    }).join('\n');
+    
+    return html.replace(/\n/g, '<br/>');
+};
+
 function BatchPage() {
     const { useState, useEffect } = React;
-    const advisorQuestions = [
-        { id: '1', label: 'Nên tập trung vào phân khúc nào để dễ bán hơn?' },
-        { id: '2', label: 'Mức giá đề xuất để cạnh tranh tốt là bao nhiêu?' },
-        { id: '3', label: 'Gợi ý 3 hành động tăng doanh thu trong 7 ngày tới.' },
-        { id: '4', label: 'Rủi ro lớn nhất hiện tại là gì và xử lý thế nào?' },
-        { id: '5', label: 'Nên tối ưu sản phẩm top đầu ra sao để bứt phá?' },
-    ];
-    const chatHint = 'Gợi ý: Bạn có thể nhập keyword để hỏi hoặc chọn số từ 1 đến 5.';
 
-    const buildQuestionMenuText = () => {
-        const lines = advisorQuestions.map((q) => `${q.id}. ${q.label}`).join('\n');
-        return `Chào bạn, đây là bảng tư vấn nhanh cho trang phân tích loạt:\n\n${lines}\n\n${chatHint}`;
-    };
+    const quickCommands = [
+        { id: 'overview', label: 'Tóm tắt nhanh', prompt: 'Tóm tắt tổng quan cho từ khóa {keyword}' },
+        { id: 'price', label: 'Giá trung bình', prompt: 'Giá trung bình hiện tại là bao nhiêu?' },
+        { id: 'revenue', label: 'Tổng doanh thu', prompt: 'Tổng doanh thu ước tính của kết quả này là gì?' },
+        { id: 'sold', label: 'Số lượng bán', prompt: 'Tổng số lượng bán của nhóm sản phẩm này là bao nhiêu?' },
+        { id: 'top3', label: 'Top 3 sản phẩm', prompt: 'Top 3 sản phẩm đang nổi bật là gì?' },
+        { id: 'top1', label: 'Phân tích top 1', prompt: 'Phân tích kỹ sản phẩm {top_product} cho tôi' },
+        { id: 'segment', label: 'Phân khúc giá', prompt: 'Nhóm sản phẩm này đang tập trung vào phân khúc giá nào?' },
+        { id: 'action', label: 'Gợi ý hành động', prompt: 'Đề xuất 3 hành động tối ưu để tăng doanh thu cho từ khóa {keyword}' },
+    ];
 
     const [selectedFile, setSelectedFile] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -28,7 +113,28 @@ function BatchPage() {
     const [analysisAnalytics, setAnalysisAnalytics] = useState(null);
     const [analysisCache, setAnalysisCache] = useState({});
     const [error, setError] = useState('');
-    const [chatMessages, setChatMessages] = useState([{ role: 'assistant', text: buildQuestionMenuText() }]);
+
+    // Persistent Session ID
+    const [sessionId] = useState(() => {
+        const key = 'tiki_ai_assistant_session_id';
+        let sid = localStorage.getItem(key);
+        if (!sid) {
+            sid = 'sess_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem(key, sid);
+        }
+        return sid;
+    });
+
+    // Profile & Context state
+    const [userProfile, setUserProfile] = useState({ capital: null, location: 'TP.HCM', interest: null, experience: null });
+    const [activeBusiness, setActiveBusiness] = useState(null);
+
+    const [chatMessages, setChatMessages] = useState([
+        {
+            role: 'assistant',
+            text: '👋 Xin chào! Tôi là Trợ lý AI Tư vấn Kinh doanh trên sàn Tiki.\n\nTôi có thể đề xuất các mô hình kinh doanh phù hợp với vốn, phân tích doanh thu/lợi nhuận thực tế, đánh giá rủi ro và lập kế hoạch triển khai từng bước.\n\n👉 Để bắt đầu, bạn dự kiến đầu tư số vốn khoảng bao nhiêu không?'
+        }
+    ]);
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -441,20 +547,12 @@ function BatchPage() {
         return withContext(`Tôi đang bám đúng keyword bạn đang chọn trong menu CSV. Bạn có thể:\n1. Bấm nhanh 1-5 để nhận tư vấn chiến lược\n2. Hỏi tự do: "vốn 2 triệu nên bán gì" hoặc "rủi ro hiện tại là gì"`);
     };
 
-    const extractChoice = (questionText) => {
-        const cleaned = (questionText || '').trim();
-        const match = cleaned.match(/\b([1-5])\b/);
-        return match ? match[1] : null;
-    };
-
-    const inferChoiceFromText = (questionText) => {
-        const q = (questionText || '').toLowerCase();
-        if (/(phân khúc|segment|nên tập trung|bán hơn)/i.test(q)) return '1';
-        if (/(giá|price|bao nhiêu tiền|định giá)/i.test(q)) return '2';
-        if (/(doanh thu|tăng doanh thu|7 ngày|hành động|kế hoạch)/i.test(q)) return '3';
-        if (/(rủi ro|cảnh báo|nguy cơ|xử lý thế nào)/i.test(q)) return '4';
-        if (/(top đầu|tối ưu|bứt phá|sản phẩm top|kéo traffic)/i.test(q)) return '5';
-        return null;
+    const resolveQuickPrompt = (template) => {
+        const currentKeyword = (activeKeyword || '').trim() || 'từ khóa hiện tại';
+        const topProduct = analysisResult && analysisResult.top_products && analysisResult.top_products[0] ? analysisResult.top_products[0].name : 'sản phẩm top 1 hiện tại';
+        return template
+            .replace('{keyword}', currentKeyword)
+            .replace('{top_product}', topProduct);
     };
 
     const sendChatQuestion = async (questionText) => {
@@ -466,28 +564,35 @@ function BatchPage() {
         setChatLoading(true);
 
         try {
-            const selectedChoice = extractChoice(question) || inferChoiceFromText(question);
-            const normalizedQuestion = question.toLowerCase();
-            const matchedKeyword = keywords.find((kw) => kw.toLowerCase() === normalizedQuestion);
-
-            if (matchedKeyword) {
-                await runSingleAnalysis(matchedKeyword, true);
-                setChatMessages((prev) => [
-                    ...prev,
-                    {
-                        role: 'assistant',
-                        text: `Đã chuyển sang keyword "${matchedKeyword}" trong menu CSV. Tôi đang tư vấn đúng theo keyword này.\n\n${chatHint}`
-                    }
-                ]);
-            } else if (selectedChoice) {
-                const reply = generateAdvisoryAnswer(selectedChoice);
-                setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-            } else {
-                const reply = buildBatchChatAdvice(question);
-                setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+            const res = await fetch(`${API_BASE_URL}/api/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: question,
+                    session_id: sessionId
+                })
+            });
+            
+            if (!res.ok) {
+                throw new Error(`Server returned HTTP ${res.status}`);
             }
-        } catch (chatErr) {
-            setChatMessages((prev) => [...prev, { role: 'assistant', text: `Lỗi chatbot: ${chatErr.message}` }]);
+            
+            const data = await res.json();
+            if (data.success) {
+                setChatMessages((prev) => [...prev, { role: 'assistant', text: data.response }]);
+                if (data.profile) {
+                    setUserProfile(data.profile);
+                }
+                if (data.active_business) {
+                    setActiveBusiness(data.active_business);
+                }
+            } else {
+                setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi: ${data.response || 'Không thể xử lý yêu cầu'}` }]);
+            }
+        } catch (error) {
+            setChatMessages((prev) => [...prev, { role: 'assistant', text: `❌ Lỗi kết nối: ${error.message}` }]);
         } finally {
             setChatLoading(false);
             setTimeout(() => lucide.createIcons(), 100);
@@ -498,9 +603,10 @@ function BatchPage() {
         await sendChatQuestion(chatInput);
     };
 
-    const handleQuickCommand = async (choice) => {
+    const handleQuickCommand = async (promptTemplate) => {
+        const prompt = resolveQuickPrompt(promptTemplate);
         setIsChatOpen(true);
-        await sendChatQuestion(choice);
+        await sendChatQuestion(prompt);
     };
 
     const handleExportPDF = () => {
@@ -991,62 +1097,123 @@ function BatchPage() {
                 </div>
 
                 {isChatOpen && (
-                    <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[390px] z-40">
-                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl">
-                            <div className="p-3 border-b border-blue-100 bg-blue-50 flex items-center justify-between gap-2">
+                    <div className="fixed bottom-24 right-3 left-3 sm:left-auto sm:right-6 sm:w-[410px] z-40">
+                        <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xl flex flex-col max-h-[500px]">
+                            {/* Header */}
+                            <div className="p-3 border-b border-blue-100 bg-blue-600 text-white flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
-                                    <Icon name="bot" size={18} className="text-blue-500" />
-                                    <h3 className="font-bold text-gray-900 text-sm">Chatbot phân tích loạt</h3>
+                                    <Icon name="sparkles" size={18} className="text-white fill-current animate-pulse" />
+                                    <h3 className="font-bold text-sm">AI Business Assistant</h3>
                                 </div>
-                                <button onClick={() => setIsChatOpen(false)} className="text-gray-700 hover:text-gray-900">
+                                <button
+                                    onClick={() => setIsChatOpen(false)}
+                                    className="text-white hover:text-blue-100"
+                                >
                                     <Icon name="x" size={16} />
                                 </button>
                             </div>
 
-                            <div className="p-3 border-b border-blue-100 bg-gray-50">
-                                <div className="mb-2 text-[11px] text-blue-700">
-                                    Đang tư vấn cho keyword: <span className="font-semibold text-blue-700">{activeKeyword || 'chưa chọn keyword'}</span>
+                            {/* User Profile Bar (if capital is set) */}
+                            {userProfile.capital && (
+                                <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100 text-[10px] text-blue-800 flex justify-between items-center font-medium">
+                                    <span>💰 Vốn: {Number(userProfile.capital).toLocaleString('vi-VN')}đ</span>
+                                    <span>📍 Khu vực: {userProfile.location}</span>
+                                    {activeBusiness && <span className="truncate max-w-[120px]" title={activeBusiness}>🎯 Đang chọn: {activeBusiness}</span>}
                                 </div>
-                                <p className="text-[11px] text-gray-500 mb-2">Chọn số câu hỏi tư vấn (1-5):</p>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {advisorQuestions.map((cmd) => (
+                            )}
+
+                            {/* Shortcut Commands */}
+                            <div className="p-2.5 border-b border-blue-100 bg-gray-50/50">
+                                <p className="text-[10px] text-gray-500 mb-1">Gợi ý phân tích nhanh cho "{activeKeyword || 'từ khóa'}":</p>
+                                <div className="grid grid-cols-4 gap-1">
+                                    {quickCommands.slice(0, 4).map((cmd) => (
                                         <button
                                             key={cmd.id}
-                                            onClick={() => handleQuickCommand(cmd.id)}
+                                            onClick={() => handleQuickCommand(cmd.prompt)}
                                             disabled={chatLoading}
-                                            className="text-xs text-left px-2.5 py-2 rounded-lg border border-gray-300 text-gray-800 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                            title={cmd.label}
                                         >
-                                            <span className="text-blue-700 font-semibold mr-1">{cmd.id}.</span> {cmd.label}
+                                            {cmd.label}
+                                        </button>
+                                    ))}
+                                    {quickCommands.slice(4, 8).map((cmd) => (
+                                        <button
+                                            key={cmd.id}
+                                            onClick={() => handleQuickCommand(cmd.prompt)}
+                                            disabled={chatLoading}
+                                            className="text-[9px] truncate px-1 py-1 rounded border border-gray-300 text-gray-700 hover:border-blue-500 hover:text-blue-700 bg-white transition-all disabled:opacity-50"
+                                            title={cmd.label}
+                                        >
+                                            {cmd.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="h-72 overflow-y-auto p-3 space-y-3 bg-gray-50">
+                            {/* Messages area */}
+                            <div className="h-64 overflow-y-auto p-3 space-y-3 bg-gray-50 flex-1">
                                 {chatMessages.map((m, idx) => (
                                     <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[88%] px-3 py-2 rounded-lg text-xs leading-relaxed ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-gray-800 border border-blue-100'
-                                            } whitespace-pre-line`}>
-                                            {renderChatMessageText(m.text)}
-                                        </div>
+                                        <div 
+                                            className={`max-w-[90%] px-3 py-2 rounded-lg text-xs leading-relaxed shadow-sm ${
+                                                m.role === 'user' 
+                                                    ? 'bg-blue-600 text-white rounded-br-none' 
+                                                    : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: parseMarkdown(m.text) }}
+                                        />
                                     </div>
                                 ))}
-                                {chatLoading && <div className="text-xs text-gray-500">Chatbot đang trả lời...</div>}
+                                {chatLoading && (
+                                    <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                                        <Icon name="loader-2" size={10} className="animate-spin text-blue-500" />
+                                        Trợ lý AI đang phân tích dữ liệu...
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="p-3 border-t border-blue-100 flex items-center gap-2">
+                            {/* Smart followups */}
+                            {activeBusiness && (
+                                <div className="px-3 py-1.5 border-t border-blue-55 bg-blue-50/30 flex flex-wrap gap-1">
+                                    <button
+                                        onClick={() => sendChatQuestion(`Ước tính lợi nhuận chi tiết của ý tưởng ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium transition-colors"
+                                    >
+                                        📊 Lợi nhuận
+                                    </button>
+                                    <button
+                                        onClick={() => sendChatQuestion(`Đánh giá rủi ro và phản hồi của khách hàng về sản phẩm ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium transition-colors"
+                                    >
+                                        ⚠️ Rủi ro & Đánh giá
+                                    </button>
+                                    <button
+                                        onClick={() => sendChatQuestion(`Cho tôi một lộ trình/roadmap triển khai cụ thể để bắt đầu bán ${activeBusiness}`)}
+                                        disabled={chatLoading}
+                                        className="text-[9px] px-2 py-0.5 rounded bg-green-100 hover:bg-green-200 text-green-800 font-medium transition-colors"
+                                    >
+                                        🚀 Lộ trình triển khai
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Chat input form */}
+                            <div className="p-2.5 border-t border-blue-100 flex items-center gap-1.5 bg-white">
                                 <input
                                     type="text"
                                     value={chatInput}
                                     onChange={(e) => setChatInput(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                                    placeholder="Nhập tại đây"
-                                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
+                                    placeholder="Đặt câu hỏi tư vấn (ví dụ: tôi có 200M vốn...)"
+                                    className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-400 outline-none transition-all"
                                 />
                                 <button
                                     onClick={handleSendChat}
                                     disabled={chatLoading || !chatInput.trim()}
-                                    className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-600 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-sm font-semibold"
+                                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white text-xs font-bold transition-all shadow shadow-blue-200"
                                 >
                                     Gửi
                                 </button>
