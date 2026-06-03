@@ -740,7 +740,7 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
         model recreation, and chat reconstruction from history if rate limits are hit.
         Returns (response, active_chat, using_groq)
         """
-        max_attempts = max(6, len(gemini_manager.api_keys) * 2)
+        max_attempts = max(8, len(gemini_manager.api_keys) * len(gemini_manager.models) * 2)
         delay = 2.0
         active_chat = chat
         
@@ -763,9 +763,9 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
                 logger.warning(f"⚠️ Chat API send_message failed (attempt {attempt + 1}/{max_attempts}): [{err_type}] {e}")
                 
                 if is_rate_limit:
-                    logger.info("🔄 Chat message rate limited or quota exceeded. Rotating API key...")
-                    if gemini_manager.rotate_key():
-                        # Key rotated. Recreate the model
+                    logger.info("🔄 Chat message rate limited or quota exceeded. Rotating API key or model...")
+                    if gemini_manager.rotate_key_or_model():
+                        # Key or Model rotated. Recreate the model using current active model in rotation
                         self.model = gemini_manager.get_model(
                             model_name="gemini-flash-latest",
                             tools=[self.tool]
@@ -773,10 +773,10 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
                         # Re-hydrate the chat from the previous chat's history
                         chat_history = list(active_chat.history)
                         active_chat = self.model.start_chat(history=chat_history)
-                        logger.info("✅ Gemini model and chat session reconstructed with new key. Retrying...")
+                        logger.info("✅ Gemini model and chat session reconstructed. Retrying...")
                         continue
                     else:
-                        logger.warning("⚠️ All Gemini keys exhausted or single key used.")
+                        logger.warning("⚠️ Key or model rotation failed.")
                             
                 if attempt == max_attempts - 1:
                     raise e
@@ -1076,7 +1076,7 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
         logger.info(f"[Gemini Chat] Sending message: {modified_message[:100]}...")
         
         # Simple send with retry
-        max_attempts = max(4, len(gemini_manager.api_keys) * 2)
+        max_attempts = max(8, len(gemini_manager.api_keys) * len(gemini_manager.models) * 2)
         delay = 2.0
         response = None
         
@@ -1090,7 +1090,7 @@ Nhiệm vụ của bạn là tư vấn, định hướng và hỗ trợ người
                 is_rate_limit = "429" in err_str or "quota" in err_str.lower() or "ResourceExhausted" in err_str
                 logger.warning(f"⚠️ Gemini failed (attempt {attempt + 1}): {e}")
                 
-                if is_rate_limit and gemini_manager.rotate_key():
+                if is_rate_limit and gemini_manager.rotate_key_or_model():
                     self.model = gemini_manager.get_model(
                         model_name="gemini-flash-latest", 
                         tools=[self.tool]
