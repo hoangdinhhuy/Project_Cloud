@@ -2,6 +2,9 @@
 # TIKI RAG API - FastAPI Server
 # ============================================================
 
+import os
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 from fastapi import FastAPI, HTTPException, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field

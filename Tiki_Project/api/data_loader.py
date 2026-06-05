@@ -8,12 +8,20 @@ import re
 import unicodedata
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Any
+from typing import TYPE_CHECKING, Dict, List, Any, Optional
 
 if TYPE_CHECKING:
     import pandas as pd
 
 logger = logging.getLogger(__name__)
+
+# SmartSearch integration (imported lazily to avoid circular deps)
+try:
+    from search_engine import SmartSearch
+    _SMART_SEARCH_AVAILABLE = True
+except ImportError:
+    _SMART_SEARCH_AVAILABLE = False
+    logger.warning("SmartSearch not available; falling back to legacy keyword search.")
 
 
 class DataLoader:
@@ -39,8 +47,10 @@ class DataLoader:
         self.url_by_product_id = {}
         self.urls_by_name = {}
         self.url_lookup_cache = {}
+        self._smart_search: Optional["SmartSearch"] = None
 
         self._load_all()
+        self._init_smart_search()
 
     def _load_all(self):
         """Load all data files"""
@@ -55,19 +65,24 @@ class DataLoader:
                 products_data = json.load(f)
             self.products_df = pd.DataFrame(products_data)
 
-            # Standardize category names
+            # Keep a raw-slug copy BEFORE display-name mapping
+            # SmartSearch/CategoryMatcher needs raw slugs for semantic matching
+            self._raw_slug_df = self.products_df.copy()
+
+            # Standardize category names for UI display
             CATEGORY_MAPPING = {
                 "dien-thoai-may-tinh-bang": "Điện thoại - Máy tính bảng",
-                "laptop-may-tinh-bo": "Laptop - Máy tính bộ",
-                "thiet-bi-dien-tu": "Thiết bị điện tử",
-                "do-gia-dung": "Đồ gia dụng",
-                "thoi-trang-nam": "Thời trang nam",
-                "thoi-trang-nu": "Thời trang nữ",
-                "my-pham-lam-dep": "Mỹ phẩm - Làm đẹp",
-                "sach-truyen": "Sách truyện",
-                "the-thao-da-ngoai": "Thể thao - Dã ngoại",
-                "o-to-xe-may": "Ô tô - Xe máy",
+                "laptop-may-tinh-bo":        "Laptop - Máy tính bộ",
+                "thiet-bi-dien-tu":          "Thiết bị điện tử",
+                "do-gia-dung":               "Đồ gia dụng",
+                "thoi-trang-nam":            "Thời trang nam",
+                "thoi-trang-nu":             "Thời trang nữ",
+                "my-pham-lam-dep":           "Mỹ phẩm - Làm đẹp",
+                "sach-truyen":               "Sách truyện",
+                "the-thao-da-ngoai":         "Thể thao - Dã ngoại",
+                "o-to-xe-may":               "Ô tô - Xe máy",
             }
+            self._slug_to_display = CATEGORY_MAPPING  # keep for SmartSearch response mapping
             if not self.products_df.empty and "category" in self.products_df.columns:
                 self.products_df["category"] = self.products_df["category"].map(
                     lambda x: CATEGORY_MAPPING.get(x, x)
@@ -118,6 +133,26 @@ class DataLoader:
         else:
             logger.warning(f"   ⚠️  Raw products file not found: {raw_products_path}")
             self.raw_products_df = pd.DataFrame()
+
+    def _init_smart_search(self) -> None:
+        """Build SmartSearch index after data is loaded."""
+        if not _SMART_SEARCH_AVAILABLE:
+            return
+        # Use raw-slug df so CategoryMatcher can use real slugs for semantic matching.
+        # Fallback to products_df if raw copy doesn't exist.
+        search_df = getattr(self, "_raw_slug_df", self.products_df)
+        if search_df is None or search_df.empty:
+            return
+        try:
+            self._smart_search = SmartSearch(
+                products_df=search_df,
+                resolve_url_fn=self.resolve_product_url,
+                slug_to_display=getattr(self, "_slug_to_display", {}),
+            )
+            logger.info("   ✅ SmartSearch index ready")
+        except Exception as exc:
+            logger.warning(f"   ⚠️  SmartSearch init failed: {exc}; falling back to legacy search.")
+            self._smart_search = None
 
     @staticmethod
     def _normalize_text(value: Any) -> str:
@@ -263,21 +298,31 @@ class DataLoader:
         return self.timeseries_df
 
     def search_products(
-        self, keyword: str, limit: int = 20, use_relevance_boost: bool = True
+        self, keyword: str, limit: int = 20, use_relevance_boost: bool = True, debug: bool = False
     ) -> List[Dict]:
         """
-        Search products by keyword with combined relevance and sales ranking.
+        Search products by keyword.
+        Uses SmartSearch (BM25 + fuzzy + synonym expansion) when available,
+        falls back to the legacy regex-based approach.
 
         Args:
-            keyword: Search keyword
-            limit: Max number of results
-            use_relevance_boost: If True, boost relevance for specialized searches (with model/brand terms)
+            keyword:            Search keyword (with/without accent, may have typos).
+            limit:              Max number of results.
+            use_relevance_boost: Legacy param, kept for API compatibility.
+            debug:              If True, attach '_debug' score breakdown to each product.
 
         Returns:
-            List of product dictionaries sorted by relevance + sales
+            List of product dictionaries sorted by relevance + sales.
         """
-        if self.products_df.empty:
+        if self.products_df is None or self.products_df.empty:
             return []
+
+        # --- SmartSearch (new engine) ---
+        if self._smart_search is not None:
+            return self._smart_search.search(keyword=keyword, limit=limit, debug=debug)
+
+        # --- Legacy fallback (old regex engine) ---
+        logger.debug("search_products: using legacy regex engine")
 
         # Search in name and category
         keyword_lower = keyword.lower()

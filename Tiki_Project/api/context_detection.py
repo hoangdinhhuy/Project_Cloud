@@ -4,15 +4,114 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _norm(value: Any) -> str:
+    """Normalize text: remove accents, lowercase, keep alphanumeric + spaces."""
     if value is None:
         return ""
     text = str(value).strip().lower()
     if not text:
         return ""
+    # Handle đ/Đ explicitly (NFD doesn't decompose it)
+    text = text.replace("đ", "d").replace("Đ", "d")
     text = unicodedata.normalize("NFKD", text)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+# ============================================================
+# CANONICAL INTENT MAP
+# Maps normalized query variants → (canonical_label, context_hint)
+# canonical_label: label đẹp có dấu hiển thị trên UI
+# context_hint: gợi ý context_id ưu tiên (override fallback)
+# ============================================================
+_CANONICAL_INTENTS: Dict[str, Dict[str, str]] = {
+    # === Điện thoại ===
+    "dien thoai":              {"label": "điện thoại", "context": "product"},
+    "dien thoai thong minh":   {"label": "điện thoại thông minh", "context": "product"},
+    "smartphone":              {"label": "điện thoại", "context": "product"},
+    "phone":                   {"label": "điện thoại", "context": "product"},
+    "mobile":                  {"label": "điện thoại", "context": "product"},
+    "dt":                      {"label": "điện thoại", "context": "product"},
+    # === Máy tính bảng ===
+    "may tinh bang":           {"label": "máy tính bảng", "context": "product"},
+    "tablet":                  {"label": "máy tính bảng", "context": "product"},
+    "ipad":                    {"label": "iPad", "context": "product"},
+    # === Laptop ===
+    "laptop":                  {"label": "laptop", "context": "product"},
+    "may tinh xach tay":       {"label": "máy tính xách tay", "context": "product"},
+    "notebook":                {"label": "laptop", "context": "product"},
+    # === Tai nghe ===
+    "tai nghe":                {"label": "tai nghe", "context": "product"},
+    "tai nghe bluetooth":      {"label": "tai nghe bluetooth", "context": "product"},
+    "tai nghe chong on":       {"label": "tai nghe chống ồn", "context": "product"},
+    "headphone":               {"label": "tai nghe", "context": "product"},
+    "earphone":                {"label": "tai nghe", "context": "product"},
+    "earbuds":                 {"label": "tai nghe", "context": "product"},
+    # === TV / Màn hình ===
+    "tivi":                    {"label": "tivi", "context": "product"},
+    "man hinh":                {"label": "màn hình", "context": "product"},
+    "monitor":                 {"label": "màn hình", "context": "product"},
+    # === Thời trang ===
+    "ao thun":                 {"label": "áo thun", "context": "product"},
+    "ao thun nam":             {"label": "áo thun nam", "context": "product"},
+    "ao thun nu":              {"label": "áo thun nữ", "context": "product"},
+    "ao phong":                {"label": "áo phông", "context": "product"},
+    "ao phong nam":            {"label": "áo phông nam", "context": "product"},
+    "quan jean":               {"label": "quần jean", "context": "product"},
+    "jeans":                   {"label": "quần jean", "context": "product"},
+    "vay":                     {"label": "váy", "context": "product"},
+    "chan vay":                 {"label": "chân váy", "context": "product"},
+    "dam nu":                  {"label": "đầm nữ", "context": "product"},
+    "giay the thao":           {"label": "giày thể thao", "context": "product"},
+    "sneaker":                 {"label": "giày thể thao", "context": "product"},
+    # === Sách ===
+    "sach":                    {"label": "sách", "context": "book"},
+    "truyen tranh":            {"label": "truyện tranh", "context": "book"},
+    "manga":                   {"label": "manga / truyện tranh", "context": "book"},
+    "comic":                   {"label": "truyện tranh", "context": "book"},
+    # === Xe / Phương tiện ===
+    "xe may":                  {"label": "xe máy", "context": "vehicle"},
+    "o to":                    {"label": "ô tô", "context": "vehicle"},
+    "xe dap":                  {"label": "xe đạp", "context": "vehicle"},
+    # === Skincare / Mỹ phẩm ===
+    "son moi":                 {"label": "son môi", "context": "product"},
+    "lipstick":                {"label": "son môi", "context": "product"},
+    "sua rua mat":             {"label": "sữa rửa mặt", "context": "product"},
+    "kem chong nang":          {"label": "kem chống nắng", "context": "product"},
+    "sunscreen":               {"label": "kem chống nắng", "context": "product"},
+    "serum":                   {"label": "serum", "context": "product"},
+    "kem duong am":            {"label": "kem dưỡng ẩm", "context": "product"},
+    # === Gia dụng ===
+    "noi com dien":            {"label": "nồi cơm điện", "context": "product"},
+    # === Thể thao ===
+    "giay chay bo":            {"label": "giày chạy bộ", "context": "product"},
+}
+
+
+def resolve_canonical(keyword: str) -> Dict[str, str] | None:
+    """
+    Given a raw keyword, return its canonical info dict if found.
+    Returns: {"label": "...", "context": "..."} or None.
+
+    Matching order:
+    1. Exact normalized match
+    2. Prefix match (longest first)
+    """
+    kw_norm = _norm(keyword)
+    if not kw_norm:
+        return None
+    # Exact match
+    if kw_norm in _CANONICAL_INTENTS:
+        return _CANONICAL_INTENTS[kw_norm]
+    # Longest prefix match
+    best_key = ""
+    for key in _CANONICAL_INTENTS:
+        if kw_norm.startswith(key) or key.startswith(kw_norm):
+            if len(key) > len(best_key):
+                best_key = key
+    if best_key:
+        return _CANONICAL_INTENTS[best_key]
+    return None
 
 
 def _contains_any(haystack: str, needles: List[str]) -> bool:
@@ -23,6 +122,9 @@ def detectContext(product: Dict[str, Any], keyword: str) -> str:
     """
     Classify a product into a context bucket using lightweight heuristics.
     Returns a stable context_id (e.g. vehicle, book, accessory, toy, tool, product, other).
+
+    All checks run on normalized text (_norm) so accented / unaccented queries
+    produce identical results.
     """
     kw = _norm(keyword)
 
@@ -32,6 +134,25 @@ def detectContext(product: Dict[str, Any], keyword: str) -> str:
         product.get("description") or product.get("short_description") or ""
     )
     text = f"{title} {category} {description}".strip()
+
+    # ===== CANONICAL INTENT OVERRIDE =====
+    # If the query maps to a well-known canonical intent AND the product
+    # contains the normalized keyword (or a synonym token), use canonical context.
+    # This prevents "dien thoai" / "smartphone" from falling through to "other".
+    canonical = resolve_canonical(keyword)
+    if canonical:
+        canonical_ctx = canonical["context"]
+        # Build set of all relevant tokens: query tokens + label tokens
+        kw_tokens = set(kw.split())
+        label_tokens = set(_norm(canonical["label"]).split())
+        all_search_tokens = kw_tokens | label_tokens
+        text_tokens = set(text.split())
+        token_overlap = all_search_tokens & text_tokens
+        if token_overlap or kw in text:
+            # Product is relevant to this canonical intent
+            # Still allow book/vehicle overrides for specialised contexts
+            if canonical_ctx not in ("vehicle", "book"):
+                return canonical_ctx
 
     # ===== TOY CAR DETECTION (Highest Priority for toy cars) =====
     # Detect toy cars/models BEFORE general accessory to separate from vehicle parts
@@ -341,16 +462,47 @@ def _get_context_priority(context_id: str) -> int:
     return priority_map.get(context_id, 0)
 
 
+# ============================================================
+# QUERY MODIFIER DETECTION
+# Modifiers that legitimately trigger book/toy/tool contexts.
+# A context is ONLY shown if:
+#   (a) Query contains the modifier explicitly, OR
+#   (b) Products in the bucket strongly evidence keyword+context co-occurrence.
+# ============================================================
+_MODIFIER_PATTERNS: Dict[str, List[str]] = {
+    "book":      ["sach ve", "sach", "book", "giao trinh", "cam nang", "tu dien", "truyen"],
+    "toy":       ["mo hinh", "do choi", "toy", "figure", "lego", "miniature"],
+    "tool":      ["dung cu", "tool", "phu kien sua", "sua chua", "bao duong", "ve sinh"],
+    "accessory": ["phu kien", "op lung", "cap sac", "bao da", "dan man hinh"],
+}
+
+
+def _query_has_modifier(query_norm: str, context_id: str) -> bool:
+    """Return True if the normalized query explicitly contains a modifier for context_id."""
+    patterns = _MODIFIER_PATTERNS.get(context_id, [])
+    return any(p in query_norm for p in patterns)
+
+
 def _context_label(keyword: str, context_id: str) -> str:
-    kw = keyword.strip()
+    """
+    Build display label for a context bucket.
+    Only produces human-readable labels — template strings that combine
+    context type with keyword are ONLY used when context_id == 'product',
+    'vehicle', or 'accessory' (which are always keyword-relevant).
+    For book/toy/tool/other, the label reflects what the products actually ARE,
+    not a hypothetical relationship to the keyword.
+    """
+    canonical = resolve_canonical(keyword)
+    display_kw = canonical["label"] if canonical else keyword.strip()
+
     mapping = {
-        "vehicle": f"{kw} (phương tiện)",
-        "book": f"Sách có liên quan {kw}" if kw else "Sách",
-        "tool": f"Dụng cụ liên quan {kw}" if kw else "Dụng cụ",
-        "toy": f"Mô hình/đồ chơi {kw}" if kw else "Đồ chơi/mô hình",
-        "accessory": f"Phụ kiện {kw}" if kw else "Phụ kiện",
-        "product": f"{kw} (sản phẩm)",
-        "other": f"Khác liên quan {kw}" if kw else "Khác",
+        "vehicle":   f"{display_kw} (phương tiện)",
+        "book":      "Sách liên quan",
+        "tool":      "Dụng cụ / phụ kiện liên quan",
+        "toy":       "Mô hình / đồ chơi liên quan",
+        "accessory": f"Phụ kiện {display_kw}" if display_kw else "Phụ kiện",
+        "product":   f"{display_kw} (sản phẩm)",
+        "other":     "Sản phẩm khác liên quan",
     }
     return mapping.get(context_id, context_id)
 
@@ -366,52 +518,124 @@ def getSuggestedContexts(
     max_suggestions: int = 6,
 ) -> List[Dict[str, Any]]:
     """
-    Return alternative context suggestions sorted by PRIORITY first, then by count.
-    Exclude the selected_context.
+    Return data-validated context suggestions.
 
-    IMPORTANT: Only suggest contexts if they have sufficient data quality.
-    This prevents suggesting categories with insufficient/irrelevant products.
+    A context bucket is only shown if ALL of the following hold:
+      1. It has >= min_threshold products.
+      2. For 'modifier' contexts (book, toy, tool): either the query explicitly
+         contains the modifier keyword, OR >= MIN_EVIDENCE_RATIO of products in
+         the bucket have the keyword appearing in their name/category.
+         This prevents "Sách về váy" from appearing when query is just "váy".
+      3. 'product', 'vehicle', 'accessory' contexts: always shown if count >= threshold
+         (these are inherently keyword-relevant — the products contain the keyword).
 
-    Data quality thresholds (minimum products required):
-    - vehicle: 10+ (real vehicles with brand/model)
-    - accessory: 5+ (parts/accessories)
-    - tool: 5+ (maintenance/tools)
-    - toy: 5+ (models/toys - reduced from 8)
-    - book: 5+ (books about the topic, not just mentioning keyword)
+    Debug fields added to each suggestion:
+      is_template_generated: always False (templates removed)
+      is_validated_by_data:  True if evidence_ratio >= threshold
+      evidence_count:        # products with keyword in name
+      evidence_examples:     up to 3 product names proving the context
     """
-    # Define minimum thresholds for each context
-    min_thresholds = {
-        "vehicle": 10,  # Only suggest if >= 10 real vehicles
-        "accessory": 5,  # Safe threshold
-        "tool": 5,  # Safe threshold
-        "toy": 5,  # Reduced from 8+ to allow toy suggestions sooner
-        "book": 5,  # Stricter - need quality books
-        "product": 5,
-        "other": 3,
+    kw_norm = _norm(keyword)
+
+    # Minimum product count thresholds per context type
+    min_thresholds: Dict[str, int] = {
+        "vehicle":   8,
+        "accessory": 4,
+        "tool":      4,
+        "toy":       4,
+        "book":      4,
+        "product":   3,
+        "other":     5,  # "other" has no meaningful label — keep threshold high
     }
+    # Contexts that require modifier evidence check
+    MODIFIER_CONTEXTS = {"book", "toy", "tool"}
+    # Min ratio of products that must contain keyword tokens for modifier contexts
+    MIN_EVIDENCE_RATIO = 0.30
 
     counts: List[Tuple[str, int]] = [
         (ctx, len(items))
         for ctx, items in grouped.items()
         if ctx != selected_context and len(items) > 0
     ]
-    # Sort by PRIORITY first, then by count (for display order)
     counts.sort(key=lambda x: (-_get_context_priority(x[0]), -x[1]))
+
+    kw_tokens = set(kw_norm.split()) if kw_norm else set()
 
     suggestions = []
     for ctx, cnt in counts:
-        # Only include if meets minimum threshold
-        min_count = min_thresholds.get(ctx, 3)
-        if cnt >= min_count:
-            suggestions.append(
-                {
-                    "context_id": ctx,
-                    "label": _context_label(keyword, ctx),
-                    "count": cnt,
-                }
-            )
-            if len(suggestions) >= max_suggestions:
-                break
+        min_count = min_thresholds.get(ctx, 5)
+        if cnt < min_count:
+            continue
+
+        # Skip uninformative "other" bucket unless it's a very strong signal
+        if ctx == "other" and cnt < 8:
+            continue
+
+        bucket_products = grouped.get(ctx, [])
+
+        # --- Modifier context validation ---
+        if ctx in MODIFIER_CONTEXTS:
+            # (a) Query explicitly contains the modifier → always show
+            query_has_mod = _query_has_modifier(kw_norm, ctx)
+
+            # (b) Evidence check: does keyword appear in product names/categories?
+            if not query_has_mod:
+                evidence_products = [
+                    p for p in bucket_products
+                    if kw_tokens and kw_tokens.issubset(
+                        set(_norm(
+                            str(p.get("title", "") or p.get("name", ""))
+                            + " " +
+                            str(p.get("categoryName", "") or p.get("category", ""))
+                        ).split())
+                    )
+                ]
+                evidence_ratio = len(evidence_products) / cnt if cnt > 0 else 0.0
+                if evidence_ratio < MIN_EVIDENCE_RATIO:
+                    # Not enough products contain the keyword — skip this context
+                    continue
+                evidence_examples = [
+                    str(p.get("title", p.get("name", "")))[:60]
+                    for p in evidence_products[:3]
+                ]
+                is_validated = True
+            else:
+                # Query has modifier — validate by checking products too
+                evidence_products = [
+                    p for p in bucket_products
+                    if kw_tokens and kw_tokens.issubset(
+                        set(_norm(
+                            str(p.get("title", "") or p.get("name", ""))
+                            + " " +
+                            str(p.get("categoryName", "") or p.get("category", ""))
+                        ).split())
+                    )
+                ]
+                evidence_examples = [
+                    str(p.get("title", p.get("name", "")))[:60]
+                    for p in evidence_products[:3]
+                ]
+                is_validated = True
+        else:
+            # Non-modifier context: always show if count >= threshold
+            evidence_products = bucket_products
+            evidence_examples = [
+                str(p.get("title", p.get("name", "")))[:60]
+                for p in bucket_products[:3]
+            ]
+            is_validated = True
+
+        suggestions.append({
+            "context_id":            ctx,
+            "label":                 _context_label(keyword, ctx),
+            "count":                 cnt,
+            "is_template_generated": False,
+            "is_validated_by_data":  is_validated,
+            "evidence_count":        len(evidence_products),
+            "evidence_examples":     evidence_examples,
+        })
+        if len(suggestions) >= max_suggestions:
+            break
 
     return suggestions
 

@@ -1,0 +1,497 @@
+﻿======================================================================
+SMART SEARCH v2 ΓÇö TEST RESULTS
+======================================================================
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         '─æiß╗çn thoß║íi'
+Preprocessed:  'dien thoai'
+Results found: 5
+
+  [1] ─Éiß╗çn thoß║íi Samsung Galaxy A06 5G (4/128GB), M├án H├¼nh Cß╗▒c ─Éß║íi HD+ 
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 2,390,000 VND | Rating: 3.7 | Sold: 20,145
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.237  pop=0.088
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] ─Éiß╗çn thoß║íi OPPO A3 8GB/128GB - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,290,000 VND | Rating: 4.7 | Sold: 14,867
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.085
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [3] ─Éiß╗çn thoß║íi Samsung Galaxy A26 5G (8/128GB), Mß║╖t l╞░ng k├¡nh, AI-Cir
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,190,000 VND | Rating: 5.0 | Sold: 4,378
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.235  pop=0.074
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [4] ─É├¿n Pin Led Si├¬u S├íng Mini C├│ Sß║íc USB C├│ Hß╗ù Trß╗ú Sß║íc Dß╗▒ Ph├▓ng Lß║íi 
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 99,000 VND | Rating: 4.2 | Sold: 1,859
+       final=1.000  exact=0.900  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.197  pop=0.067
+       Reason: exact_phrase_in_name
+
+  [5] ─Éiß╗çn thoß║íi Oppo A5x (4GB/64GB) - H├áng ch├¡nh h├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 3,490,000 VND | Rating: 5.0 | Sold: 1,746
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.066
+       Reason: exact_phrase_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'dien thoai'
+Preprocessed:  'dien thoai'
+Results found: 5
+
+  [1] ─Éiß╗çn thoß║íi Samsung Galaxy A06 5G (4/128GB), M├án H├¼nh Cß╗▒c ─Éß║íi HD+ 
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 2,390,000 VND | Rating: 3.7 | Sold: 20,145
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.237  pop=0.088
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] ─Éiß╗çn thoß║íi OPPO A3 8GB/128GB - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,290,000 VND | Rating: 4.7 | Sold: 14,867
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.085
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [3] ─Éiß╗çn thoß║íi Samsung Galaxy A26 5G (8/128GB), Mß║╖t l╞░ng k├¡nh, AI-Cir
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,190,000 VND | Rating: 5.0 | Sold: 4,378
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.235  pop=0.074
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [4] ─É├¿n Pin Led Si├¬u S├íng Mini C├│ Sß║íc USB C├│ Hß╗ù Trß╗ú Sß║íc Dß╗▒ Ph├▓ng Lß║íi 
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 99,000 VND | Rating: 4.2 | Sold: 1,859
+       final=1.000  exact=0.900  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.197  pop=0.067
+       Reason: exact_phrase_in_name
+
+  [5] ─Éiß╗çn thoß║íi Oppo A5x (4GB/64GB) - H├áng ch├¡nh h├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 3,490,000 VND | Rating: 5.0 | Sold: 1,746
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.066
+       Reason: exact_phrase_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'dienthoai'
+Preprocessed:  'dien thoai'
+Results found: 5
+
+  [1] ─Éiß╗çn thoß║íi Samsung Galaxy A06 5G (4/128GB), M├án H├¼nh Cß╗▒c ─Éß║íi HD+ 
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 2,390,000 VND | Rating: 3.7 | Sold: 20,145
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.237  pop=0.088
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] ─Éiß╗çn thoß║íi OPPO A3 8GB/128GB - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,290,000 VND | Rating: 4.7 | Sold: 14,867
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.085
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [3] ─Éiß╗çn thoß║íi Samsung Galaxy A26 5G (8/128GB), Mß║╖t l╞░ng k├¡nh, AI-Cir
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,190,000 VND | Rating: 5.0 | Sold: 4,378
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.235  pop=0.074
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [4] ─É├¿n Pin Led Si├¬u S├íng Mini C├│ Sß║íc USB C├│ Hß╗ù Trß╗ú Sß║íc Dß╗▒ Ph├▓ng Lß║íi 
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 99,000 VND | Rating: 4.2 | Sold: 1,859
+       final=1.000  exact=0.900  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.197  pop=0.067
+       Reason: exact_phrase_in_name
+
+  [5] ─Éiß╗çn thoß║íi Oppo A5x (4GB/64GB) - H├áng ch├¡nh h├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 3,490,000 VND | Rating: 5.0 | Sold: 1,746
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.066
+       Reason: exact_phrase_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         '─æi├¬n thoß║íi'
+Preprocessed:  'dien thoai'
+Results found: 5
+
+  [1] ─Éiß╗çn thoß║íi Samsung Galaxy A06 5G (4/128GB), M├án H├¼nh Cß╗▒c ─Éß║íi HD+ 
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 2,390,000 VND | Rating: 3.7 | Sold: 20,145
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.237  pop=0.088
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] ─Éiß╗çn thoß║íi OPPO A3 8GB/128GB - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,290,000 VND | Rating: 4.7 | Sold: 14,867
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.085
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [3] ─Éiß╗çn thoß║íi Samsung Galaxy A26 5G (8/128GB), Mß║╖t l╞░ng k├¡nh, AI-Cir
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,190,000 VND | Rating: 5.0 | Sold: 4,378
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.235  pop=0.074
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [4] ─É├¿n Pin Led Si├¬u S├íng Mini C├│ Sß║íc USB C├│ Hß╗ù Trß╗ú Sß║íc Dß╗▒ Ph├▓ng Lß║íi 
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 99,000 VND | Rating: 4.2 | Sold: 1,859
+       final=1.000  exact=0.900  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.197  pop=0.067
+       Reason: exact_phrase_in_name
+
+  [5] ─Éiß╗çn thoß║íi Oppo A5x (4GB/64GB) - H├áng ch├¡nh h├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 3,490,000 VND | Rating: 5.0 | Sold: 1,746
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.066
+       Reason: exact_phrase_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'smartphone'
+Preprocessed:  'dien thoai'
+Results found: 5
+
+  [1] ─Éiß╗çn thoß║íi Samsung Galaxy A06 5G (4/128GB), M├án H├¼nh Cß╗▒c ─Éß║íi HD+ 
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 2,390,000 VND | Rating: 3.7 | Sold: 20,145
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.237  pop=0.088
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] ─Éiß╗çn thoß║íi OPPO A3 8GB/128GB - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,290,000 VND | Rating: 4.7 | Sold: 14,867
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.085
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [3] ─Éiß╗çn thoß║íi Samsung Galaxy A26 5G (8/128GB), Mß║╖t l╞░ng k├¡nh, AI-Cir
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 5,190,000 VND | Rating: 5.0 | Sold: 4,378
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.235  pop=0.074
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [4] ─É├¿n Pin Led Si├¬u S├íng Mini C├│ Sß║íc USB C├│ Hß╗ù Trß╗ú Sß║íc Dß╗▒ Ph├▓ng Lß║íi 
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 99,000 VND | Rating: 4.2 | Sold: 1,859
+       final=1.000  exact=0.900  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.197  pop=0.067
+       Reason: exact_phrase_in_name
+
+  [5] ─Éiß╗çn thoß║íi Oppo A5x (4GB/64GB) - H├áng ch├¡nh h├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 3,490,000 VND | Rating: 5.0 | Sold: 1,746
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.271  pop=0.066
+       Reason: exact_phrase_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'truyß╗çn tranh'
+Preprocessed:  'truyen tranh'
+Results found: 5
+
+  [1] H├áng X├│m Cß╗ºa T├┤i TOTORO (Truyß╗çn tranh m├áu) - [Chß╗ìn Tß║¡p Lß║╗]
+       Category: S├ích truyß╗çn
+       Price: 71,250 VND | Rating: 5.0 | Sold: 100
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.260  pop=0.041
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] Tranh Truyß╗çn Lß╗ïch Sß╗¡ Viß╗çt Nam
+       Category: S├ích truyß╗çn
+       Price: 18,400 VND | Rating: 5.0 | Sold: 16
+       final=1.000  exact=0.720  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.025
+       Reason: all_tokens_in_name | category_focus_match
+
+  [3] S├ích Nß╗ùi buß╗ôn chiß║┐n tranh
+       Category: S├ích truyß╗çn
+       Price: 96,000 VND | Rating: 5.0 | Sold: 4,603
+       final=0.531  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.276  pop=0.075
+       Reason: category_focus_match
+
+  [4] S├ích C├íc Cuß╗Öc Chiß║┐n Tranh Tiß╗ün Tß╗ç (T├íi Bß║ún)
+       Category: S├ích truyß╗çn
+       Price: 118,000 VND | Rating: 4.8 | Sold: 2,626
+       final=0.508  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.258  pop=0.070
+       Reason: category_focus_match
+
+  [5] Nß╗ùi Buß╗ôn Chiß║┐n Tranh (T├íi Bß║ún 2022)
+       Category: S├ích truyß╗çn
+       Price: 117,000 VND | Rating: 4.8 | Sold: 534
+       final=0.503  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.267  pop=0.056
+       Reason: category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'truyen tranh'
+Preprocessed:  'truyen tranh'
+Results found: 5
+
+  [1] H├áng X├│m Cß╗ºa T├┤i TOTORO (Truyß╗çn tranh m├áu) - [Chß╗ìn Tß║¡p Lß║╗]
+       Category: S├ích truyß╗çn
+       Price: 71,250 VND | Rating: 5.0 | Sold: 100
+       final=1.000  exact=0.900  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.260  pop=0.041
+       Reason: exact_phrase_in_name | category_focus_match
+
+  [2] Tranh Truyß╗çn Lß╗ïch Sß╗¡ Viß╗çt Nam
+       Category: S├ích truyß╗çn
+       Price: 18,400 VND | Rating: 5.0 | Sold: 16
+       final=1.000  exact=0.720  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.025
+       Reason: all_tokens_in_name | category_focus_match
+
+  [3] S├ích Nß╗ùi buß╗ôn chiß║┐n tranh
+       Category: S├ích truyß╗çn
+       Price: 96,000 VND | Rating: 5.0 | Sold: 4,603
+       final=0.531  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.276  pop=0.075
+       Reason: category_focus_match
+
+  [4] S├ích C├íc Cuß╗Öc Chiß║┐n Tranh Tiß╗ün Tß╗ç (T├íi Bß║ún)
+       Category: S├ích truyß╗çn
+       Price: 118,000 VND | Rating: 4.8 | Sold: 2,626
+       final=0.508  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.258  pop=0.070
+       Reason: category_focus_match
+
+  [5] Nß╗ùi Buß╗ôn Chiß║┐n Tranh (T├íi Bß║ún 2022)
+       Category: S├ích truyß╗çn
+       Price: 117,000 VND | Rating: 4.8 | Sold: 534
+       final=0.503  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.267  pop=0.056
+       Reason: category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         '├ío cho ch├│'
+Preprocessed:  'ao cho cho'
+Results found: 5
+
+  [1] Combo 2 t├║i bß╗Öt tß║⌐y lß╗ông giß║╖t cho quß║ºn ├ío th╞ím nh╞░ mß╗¢i
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 95,000 VND | Rating: 4.6 | Sold: 136
+       final=1.000  exact=0.612  cat=0.000  phrase=0.000  fuzzy=0.000  sem=0.263  pop=0.044
+       Reason: single_token_in_name|context_both_match
+
+  [2] ─én ch╞íi l├á phß║úi c├│ hß╗Öi, m├ú TB1. ├üo thun team building ─æß╗ông ─æß╗Öi, ├í
+       Category: Thß╗¥i trang nß╗»
+       Price: 69,000 VND | Rating: 4.8 | Sold: 38
+       final=1.000  exact=0.612  cat=0.000  phrase=0.000  fuzzy=0.000  sem=0.274  pop=0.033
+       Reason: single_token_in_name|context_both_match
+
+  [3] NEVER GIVE UP, m├ú G120. ├üo thun truyß╗ün ─æß╗Öng lß╗▒c cho nam nß╗», form 
+       Category: Thß╗¥i trang nß╗»
+       Price: 99,000 VND | Rating: 4.6 | Sold: 51
+       final=1.000  exact=0.612  cat=0.000  phrase=0.000  fuzzy=0.000  sem=0.270  pop=0.035
+       Reason: single_token_in_name|context_both_match
+
+  [4] Lß╗Ñc sß║»c, m├ú Goking1. ├üo thun h├áng hiß╗çu cao cß║Ñp cho nam nß╗», form u
+       Category: Thß╗¥i trang nß╗»
+       Price: 69,000 VND | Rating: 5.0 | Sold: 11
+       final=1.000  exact=0.612  cat=0.000  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.022
+       Reason: single_token_in_name|context_both_match
+
+  [5] TOKYO, m├ú G159. ├üo thun h├áng hiß╗çu GOKING, form unisex cho nam nß╗»,
+       Category: Thß╗¥i trang nß╗»
+       Price: 111,000 VND | Rating: 4.8 | Sold: 142
+       final=1.000  exact=0.612  cat=0.000  phrase=0.000  fuzzy=0.000  sem=0.258  pop=0.044
+       Reason: single_token_in_name|context_both_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'v├íy cho nam'
+Preprocessed:  'vay cho nam'
+Results found: 5
+
+  [1] ├üo kho├íc gi├│ c├ích nhiß╗çt GOKING, form unisex cho nß╗» nam. Ngo├ái vß║úi
+       Category: Thß╗¥i trang nß╗»
+       Price: 185,000 VND | Rating: 4.3 | Sold: 336
+       final=0.962  exact=0.612  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.118  pop=0.052
+       Reason: fallback_context_miss|single_token_in_name | category_focus_match
+
+  [2] ├üo kho├íc c├ích nhiß╗çt GOKING 2 lß╗¢p, form unisex cho nam nß╗». ├üo kho├í
+       Category: Thß╗¥i trang nß╗»
+       Price: 185,000 VND | Rating: 4.5 | Sold: 585
+       final=0.957  exact=0.612  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.109  pop=0.057
+       Reason: fallback_context_miss|single_token_in_name | category_focus_match
+
+  [3] ├üo kho├íc gi├│ c├ích nhiß╗çt GOKING c├│ m┼⌐, form unisex cho nam nß╗». Ngo
+       Category: Thß╗¥i trang nß╗»
+       Price: 195,000 VND | Rating: 4.7 | Sold: 671
+       final=0.956  exact=0.612  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.106  pop=0.058
+       Reason: fallback_context_miss|single_token_in_name | category_focus_match
+
+  [4] DYNAMIC, m├ú G28. ├üo thun h├áng hiß╗çu Goking cao cß║Ñp cho cß║ú gia ─æ├¼nh
+       Category: Thß╗¥i trang nß╗»
+       Price: 69,000 VND | Rating: 4.8 | Sold: 140
+       final=0.955  exact=0.612  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.119  pop=0.044
+       Reason: fallback_context_miss|single_token_in_name | category_focus_match
+
+  [5] ├üo kho├íc Goking c╞í bß║ún 2 lß╗¢p, form unisex cho nam nß╗», vß║úi d├╣ ß║Ñm ├í
+       Category: Thß╗¥i trang nß╗»
+       Price: 185,000 VND | Rating: 5.0 | Sold: 210
+       final=0.951  exact=0.612  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.111  pop=0.048
+       Reason: fallback_context_miss|single_token_in_name | category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'xe m├íy cho ng╞░ß╗¥i khuyß║┐t tß║¡t'
+Preprocessed:  'xe may cho nguoi khuyet tat'
+Results found: 5
+
+  [1] C├┤ng tß║»c tß║»t ─æ├¿n xe m├íy d├ánh cho Wave Alpha 2021 | RSX | Blade | 
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 35,000 VND | Rating: 4.5 | Sold: 34
+       final=0.672  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.032
+       Reason: category_focus_match|context_both_match
+
+  [2] Thß║╗ l├íi xe ─æa n─âng RFID. Quß║╣t ─æ╞░ß╗úc tß║Ñt cß║ú h├úng hß╗Öp ─æen. Shop c├│ t
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 99,000 VND | Rating: 5.0 | Sold: 12
+       final=0.625  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.242  pop=0.023
+       Reason: category_focus_match|context_both_match
+
+  [3] [Vß║úi D├╣ D├áy Nß║╖ng 1kg3]Bß║ít Phß╗º - ├üo Tr├╣m Xe M├íy Cao Cß║Ñp Vß║úi D├╣ 2 M
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 135,000 VND | Rating: 4.8 | Sold: 470
+       final=0.623  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.208  pop=0.055
+       Reason: category_focus_match|context_both_match
+
+  [4] Bß║ít Tr├╣m Xe M├íy, ├üo Tr├╣m Tß║Ñt Cß║ú C├íc Loß║íi Xe M├íy, Vß║úi D├╣ Si├¬u D├áy,
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 130,000 VND | Rating: 5.0 | Sold: 13
+       final=0.609  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.226  pop=0.024
+       Reason: category_focus_match|context_both_match
+
+  [5] Bß║áT TR├ÖM / Tß║ñM PHß╗ª Tß║ñT Cß║ó C├üC LOß║áI XE M├üY K├ìCH TH╞»ß╗ÜC 220x115cm , 
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 130,000 VND | Rating: 4.8 | Sold: 31
+       final=0.594  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.203  pop=0.031
+       Reason: category_focus_match|context_both_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'tai nghe bluetooth'
+Preprocessed:  'tai nghe bluetooth'
+Results found: 5
+
+  [1] Tai nghe nh├⌐t tai Samsung EO-IC100 Type C - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 550,000 VND | Rating: 5.0 | Sold: 28
+       final=0.490  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.030
+       Reason: category_focus_match
+
+  [2] Tß╗º lß║ính mini Kemin K20A - K15 Ch├¡nh H├úng - Chß╗ënh nhiß╗çt - C├┤ng ngh
+       Category: Thiß║┐t bß╗ï ─æiß╗çn tß╗¡
+       Price: 2,950,000 VND | Rating: 4.3 | Sold: 17
+       final=0.376  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.170  pop=0.026
+       Reason: category_focus_match
+
+  [3] Cß╗º Sß║íc Samsung Kh├┤ng K├¿m C├íp 25W - H├áng Ch├¡nh H├úng
+       Category: ─Éiß╗çn thoß║íi - M├íy t├¡nh bß║úng
+       Price: 540,000 VND | Rating: 4.8 | Sold: 287
+       final=0.344  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.114  pop=0.050
+       Reason: category_focus_match
+
+  [4] S├ích Nghß╗ç Thuß║¡t T╞░ Duy R├ánh Mß║ích (T├íi Bß║ún)
+       Category: S├ích truyß╗çn
+       Price: 113,960 VND | Rating: 4.8 | Sold: 11,950
+       final=0.323  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.083
+       Reason: bm25_token_match
+
+  [5] S├ích Dß║íy Con L├ám Gi├áu (Tß║¡p 1) - ─Éß╗â Kh├┤ng C├│ Tiß╗ün Vß║½n Tß║ío Ra Tiß╗ün 
+       Category: S├ích truyß╗çn
+       Price: 59,000 VND | Rating: 4.8 | Sold: 38,373
+       final=0.323  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.269  pop=0.094
+       Reason: bm25_token_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'laptop v─ân ph├▓ng'
+Preprocessed:  'may tinh xach tay van phong'
+Results found: 5
+
+  [1] T├║i ─Éß╗▒ng Hß╗Öp C╞ím Giß╗» Nhiß╗çt Grepaco N├│ng Lß║ính Nhiß╗üu Ng─ân ─Éß╗▒ng ─Éß╗ô T
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 159,000 VND | Rating: 4.8 | Sold: 243
+       final=0.371  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.182  pop=0.049
+       Reason: bm25_token_match|context_both_match
+
+  [2] B├║t Bi Xanh Ng├▓i 0.7 ─Éß║ºu Bß║Ñm Deli - Vß╗Å Nhß╗▒a M├áu Sß║»c Xinh Xß║»n Cute
+       Category: S├ích truyß╗çn
+       Price: 5,000 VND | Rating: 5.0 | Sold: 315
+       final=0.341  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.150  pop=0.051
+       Reason: bm25_token_match|context_both_match
+
+  [3] S├ích V─ân Minh ─É├┤ng Ph╞░╞íng V├á T├óy Ph╞░╞íng (Ts Thu Giang Nguyß╗àn Duy 
+       Category: S├ích truyß╗çn
+       Price: 44,000 VND | Rating: 5.0 | Sold: 559
+       final=0.320  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.124  pop=0.056
+       Reason: bm25_token_match|context_both_match
+
+  [4] Gi├í Treo M├án H├¼nh M├íy T├¡nh North Bayou F80 Lß║»p Cho M├án H├¼nh LCD 1
+       Category: Thiß║┐t bß╗ï ─æiß╗çn tß╗¡
+       Price: 758,000 VND | Rating: 4.8 | Sold: 296
+       final=0.318  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.087  pop=0.051
+       Reason: category_focus_match
+
+  [5] B╞ím xe m├íy xe ─æß║íp nhß╗Å gß╗ìn Kiotool ─æß║ºu van ─æa n─âng
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 79,000 VND | Rating: 4.7 | Sold: 471
+       final=0.311  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.117  pop=0.055
+       Reason: bm25_token_match|context_both_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'son m├┤i'
+Preprocessed:  'son moi'
+Results found: 5
+
+  [1] ─Éß║╖c Sß║ún Quß║úng Ng├úi - Bß╗Öt Tß╗Åi L├╜ S╞ín Dori - Hß╗º 70g - Tß╗Åi trß╗ông v├á 
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 79,000 VND | Rating: 4.5 | Sold: 0
+       final=0.315  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.135  pop=0.000
+       Reason: category_focus_match
+
+  [2] ─Éß║╖c Sß║ún Quß║úng Ng├úi - Tß╗Åi L├╜ S╞ín Dori - Loß║íi tß╗Åi nhiß╗üu t├⌐p - T├║i l
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 150,000 VND | Rating: 5.0 | Sold: 0
+       final=0.314  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.134  pop=0.000
+       Reason: category_focus_match
+
+  [3] Chai xß╗ït t─âng ─æß╗Ö b├│ng s╞ín ├┤ t├┤ 3M 39034 LT 3M Gloss Enhancer 400m
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 176,000 VND | Rating: 5.0 | Sold: 56
+       final=0.276  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.036
+       Reason: bm25_token_match
+
+  [4] Chai Xß╗ït ─É├ính B├│ng Nhanh 3M Gloss Enhancer 39034LT (400ml)
+       Category: ├ö t├┤ - Xe m├íy
+       Price: 157,000 VND | Rating: 4.3 | Sold: 148
+       final=0.181  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.177  pop=0.044
+       Reason: bm25_token_match
+
+  [5] [Chß╗ë Giao HCM] - Cß║ºn t├óy h╞░ß╗¢ng hß╗»u c╞í - 500g
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 35,000 VND | Rating: 5.0 | Sold: 0
+       final=0.180  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.000  pop=0.000
+       Reason: category_focus_match
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Query:         'cleanser'
+Preprocessed:  'sua rua mat'
+Results found: 5
+
+  [1] Sß╗»a Chua Hy Lß║íp 500g
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 119,000 VND | Rating: 5.0 | Sold: 0
+       final=0.341  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.161  pop=0.000
+       Reason: category_focus_match
+
+  [2] Gel th├┤ng tß║»c sinh hß╗ìc AIKOMI vß╗ç sinh cß╗æng, l├ám sß║ích ─æ╞░ß╗¥ng ß╗æng, c
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 75,000 VND | Rating: 0.0 | Sold: 39
+       final=0.273  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.280  pop=0.033
+       Reason: bm25_token_match
+
+  [3] [Chß╗ë Giao HCM] - KHOAI LANG Mß║¼T Hß╗«U C╞á 1 KG
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 75,000 VND | Rating: 3.7 | Sold: 0
+       final=0.261  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.081  pop=0.000
+       Reason: category_focus_match
+
+  [4] Mß║¡t ong rß╗½ng nguy├¬n chß║Ñt hoa c├á ph├¬ loß║íi 50 gam
+       Category: Mß╗╣ phß║⌐m - L├ám ─æß║╣p
+       Price: 10,000 VND | Rating: 4.8 | Sold: 0
+       final=0.261  exact=0.000  cat=0.180  phrase=0.000  fuzzy=0.000  sem=0.081  pop=0.000
+       Reason: category_focus_match
+
+  [5] H┼⌐ thß╗ºy tinh l├ám sß╗»a chua 200ml d├íng b├⌐o bß╗Ñng , h┼⌐ thß╗ºy tinh ─æß╗▒ng
+       Category: ─Éß╗ô gia dß╗Ñng
+       Price: 69,000 VND | Rating: 4.8 | Sold: 151
+       final=0.236  exact=0.000  cat=-0.040  phrase=0.000  fuzzy=0.000  sem=0.232  pop=0.045
+       Reason: bm25_token_match
+
+======================================================================
+DONE
+======================================================================

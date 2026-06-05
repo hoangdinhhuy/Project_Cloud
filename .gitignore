@@ -1,6 +1,11 @@
-# Exclude oversized model file for GitHub push
-Tiki_Project/module/Phobert_model/model.safetensors
+venv/
 __pycache__/
 *.pyc
-*.whl
+
 .env
+.env.*
+
+.vscode/
+.ipynb_checkpoints/
+
+*.log
