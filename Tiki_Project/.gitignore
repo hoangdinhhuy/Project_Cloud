@@ -1,0 +1,65 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Model weights (quá nặng >100MB)
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.pkl
+*.h5
+*.onnx
+
+# Node modules (website frontend)
+node_modules/
+.next/
+out/
+dist/
+
+# Vector DB / ChromaDB
+chroma_db/
+*.db
+*.sqlite
+
+# Data files lớn
+*.parquet
+*.arrow
+*.feather
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sensitive config
+*.key
+*.pem
+secrets.json
